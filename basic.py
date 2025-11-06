@@ -17,6 +17,26 @@ building_types = range(number_of_building_types)
 transport_names = ['Bicycle', 'Car']
 building_type_names = ['residential', 'commercial', 'school', 
                        'university', 'hospital', 'library']
+# extracting cluster data
+cluster_data = pd.read_csv('enbraPOIClusterLocations.csv')
+clusters = cluster_data['assigned cluster']
+
+# extracting trip data
+trip_data = pd.read_csv('all_years_start_to_end.csv')
+# filltering by month and year
+used_month = trip_data[(trip_data['year'] == 2019) & (trip_data['month'] == 1)]
+# grouping together the i to j trip numbers
+grouped_trips = (used_month.groupby(['start_station_id', 'end_station_id'])['num_trips'].sum().reset_index()) 
+# gathering the unique station ids so they can be converted to i and j
+stations = sorted(trip_data['start_station_id'].unique())
+station_pairs = [(i,j) for i in stations for j in stations]
+
+#Trips from i to j
+m = {(i,j): 0 for i,j in station_pairs}
+# creating the row values in the m array
+for _, row in grouped_trips.iterrows():
+    m[(int(row['start_station_id']), int(row['end_station_id']))] = int(row['num_trips'])
+     
 
 #%%
 # Defining parameters
@@ -28,9 +48,9 @@ budget = 1800000
 # need to add data for trip times
 h = {(i,j): 0 for i in clusters for j in clusters}
 # dock maximums
-M = [1,2,3,4,5,6,7,8,9,10]
+#M = [1,2,3,4,5,6,7,8,9,10]
 # Building weighting
-p = np.array([1,2,3,4,5,6])
+p = [1,2,3,4,5,6]
 # environmental proportion
 ep = 0.5
 # car fuel cost
@@ -47,9 +67,6 @@ y = {i: prob.addVariable(vartype=xp.integer, name='y_{0}'.format(i))
 # Number of docks in station at cluster i
 z = {i: prob.addVariable(vartype=xp.integer, name='z_{0}'.format(i))
      for i in clusters}
-# Times a bike took a journey i to j
-m = {(i,j): prob.addVariable(vartype=xp.integer, name='y_{0}_{1}'.format(i, j))
-     for i in clusters for j in clusters}
 # Number of k buildings in cluster i
 a = {(i,k): prob.addVariable(vartype=xp.integer, name='a_{0}_{1}'.format(i, k))
      for i in clusters for k in building_types}
@@ -72,9 +89,10 @@ environmental_value = car_users*user_cost*xp.Sum((m[i,j]*h[i,j]*x[i]) for i in c
 # Proportion of demand for a station at cluster i
 demand_share = (1/2*total_trips)*(xp.Sum(bikes_from_i) + xp.Sum(bikes_to_j))
 
+#%%
 # Constraints
 # station cts
-prob.addConstraint([z[i] >= x[i] for i in clusters] + [z[i] <= M[i]*x[i] for i in clusters])
+#prob.addConstraint([z[i] >= x[i] for i in clusters] + [z[i] <= M[i]*x[i] for i in clusters])
 # bike cts
 prob.addConstraint([y[i] >= x[i] for i in clusters] + [y[i] <= z[i] for i in clusters]) 
 
@@ -92,13 +110,14 @@ prob.addConstraint(y[i] >= xp.Sum(bikes_from_i-bikes_to_j) for j in clusters)
 
 # Budget limit exception
 # prob.addConstraint(total_cost <= l[1]*social_value + l[2]*environmental_value)
-        
+
+#%%
 # Objective function
 social_value = xp.Sum(((p[k]*a[i,k])/(2*total_trips)) for i in clusters for k in building_types)*xp.Sum((bikes_from_i + bikes_to_j)*y[i] for j in clusters)
 
 prob.setObjective(social_value, sense=xp.maximize)
 
 prob.write("problem","lp")
-
+#%%
 xp.setOutputEnabled(True)
 prob.solve()
