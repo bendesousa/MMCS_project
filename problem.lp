@@ -1,6 +1,6 @@
 \Written from user model (presolvestate=0x680061)
 \Problem name: basic_bikes                                                      
-\FICO Xpress v9.7.0, Hyper, written 13:31:43, Nov 3, 2025
+\FICO Xpress v9.7.0, Hyper, written 15:58:56, Nov 6, 2025
 
 Maximize
 __OBJ___: y_1 + 2 y_2 + y_4 + 2 y_5 + y_7 + 2 y_8 + 0 y_0_0 + 0 y_0_1 + 0 y_0_2
