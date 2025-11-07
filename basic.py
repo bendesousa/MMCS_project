@@ -21,10 +21,10 @@ prob = xp.problem(name='basic_bikes')
 # cluster_data = pd.read_csv('enbraPOIClusterLocations.csv')
 # clusters = cluster_data['assigned cluster']
 
-# extracting trip data
-trip_data = pd.read_csv('all_years_start_to_end.csv')
-# filltering by month and year
-used_month = trip_data[(trip_data['year'] == 2020) & (trip_data['month'] == 1)]
+# # extracting trip data
+# trip_data = pd.read_csv('all_years_start_to_end.csv')
+# # filltering by month and year
+# used_month = trip_data[(trip_data['year'] == 2020) & (trip_data['month'] == 1)]
 
 # grouping together the i to j trip numbers
 # grouped_trips = (used_month.groupby(['start_station_id', 'end_station_id'])['num_trips'].sum().reset_index()) 
@@ -40,6 +40,11 @@ used_month = trip_data[(trip_data['year'] == 2020) & (trip_data['month'] == 1)]
 # for _, row in grouped_trips.iterrows():
 #     m[(int(row['start_station_id']), int(row['end_station_id']))] = int(row['num_trips'])
      
+#%%
+# extracting trip data
+trip_data = pd.read_csv('all_years_start_to_end.csv')
+# filltering by month and year
+used_month = trip_data[(trip_data['year'] == 2020) & (trip_data['month'] == 1)]
 # grouping trips based on start and end station id
 m = (
     used_month.groupby(['start_station_id', 'end_station_id'])['num_trips']
@@ -55,7 +60,6 @@ unique_stations = sorted(set(m['start_station_id']) | set(m['end_station_id']))
 station_map = {old_id: new_id for new_id, old_id in enumerate(unique_stations, start=1)}
 m['start_mapped'] = m['start_station_id'].map(station_map)
 m['end_mapped'] = m['end_station_id'].map(station_map)
-
 
 # Creating the matrix
 matrix_size = len(unique_stations)
@@ -79,7 +83,7 @@ pd.set_option('display.width', 150)
 
 print(trip_frame)
 
-# #%%
+#%%
 # # Defining parameters
 # # all placeholder values
 # manufacture_cost = [400, 200]
