@@ -22,7 +22,7 @@ building_type_names = ['residential', 'commercial', 'school',
 #%%
 # Defining parameters
 # some placeholder values
-manufacture_cost = [1, 1]
+manufacture_cost = [20, 1]
 user_cost = 15
 car_users = 0.6
 budget = 1800000
@@ -36,6 +36,10 @@ p = [1,5,7,10,5,10]
 ep = 0.5
 # car fuel cost
 fuel_cost = 10
+
+#Max docks for a station
+M = 20
+
 # Trips from cluster i to j
 m = np.load('m_matrix.npy')
 
@@ -47,7 +51,7 @@ station_to_cluster = dict(zip(assigned_stations['station_id'], assigned_stations
 station_ids_in_matrix = sorted(assigned_stations['station_id'].tolist())
 station_index_in_matrix = {station_id: idx for idx, station_id in enumerate(station_ids_in_matrix)}
 
-n = 250
+n = number_of_clusters
 cluster_m = np.zeros((n,n))
 
 for i_station, i_cluster in station_to_cluster.items():
@@ -63,64 +67,72 @@ for i_station, i_cluster in station_to_cluster.items():
 m = cluster_m
 
 
+#%%
 # Decision variables
 # Station at cluster i
 x = {i: prob.addVariable(vartype=xp.binary, name='x_{0}'.format(i))
      for i in clusters}
 # Number of bikes in station at cluster i
-y = {i: prob.addVariable(vartype=xp.integer, name='y_{0}'.format(i))
+y = {i: prob.addVariable(vartype=xp.integer, lb=0, name='y_{0}'.format(i))
      for i in clusters}
 # Number of docks in station at cluster i
-z = {i: prob.addVariable(vartype=xp.integer, name='z_{0}'.format(i))
+z = {i: prob.addVariable(vartype=xp.integer, lb=0, name='z_{0}'.format(i))
      for i in clusters}
 
+# Trip counts
+trips_from_i = m.sum(axis=1)
+trips_to_j = m.sum(axis=0)
 
 # For concise code
-bikes_from_i = {i: xp.Sum(m[i,j] for j in clusters) for i in clusters}
-
-bikes_to_j = {j: xp.Sum(m[i,j] for i in clusters) for j in clusters}
+bikes_from_i = {i: trips_from_i[i] for i in clusters}
+bikes_to_j = {j: trips_to_j[j] for j in clusters}
 
 # Total trips
-total_trips = xp.Sum(m[i,j] for i in clusters for j in clusters)
+total_trips = m.sum()
 
 # Total cost
 total_cost = manufacture_cost[0]*xp.Sum(z[i] for i in clusters) + manufacture_cost[1]*xp.Sum(y[i] for i in clusters)
 
 #environmental value
-environmental_value = car_users*user_cost*xp.Sum((m[i,j]*h*x[i]) for i in clusters for j in clusters)
+environmental_value = car_users*user_cost*xp.Sum((trips_from_i[i]*h*x[i]) for i in clusters)
 
 # Proportion of demand for a station at cluster i
-demand_share = (1/2*total_trips)*(xp.Sum(bikes_from_i) + xp.Sum(bikes_to_j))
+demand_share = {i: 0.5*(bikes_from_i[i] + bikes_to_j[i])/ total_trips
+                for i in clusters}
 
 #%%
 # Constraints
-# station cts
-#prob.addConstraint([z[i] >= x[i] for i in clusters] + [z[i] <= M[i]*x[i] for i in clusters])
-# bike cts
-prob.addConstraint([y[i] >= x[i] for i in clusters] + [y[i] <= z[i] for i in clusters]) 
 
 # demand cts
 for i in clusters:
-    prob.addConstraint(y[i] >= xp.Sum(m[i,j]-m[j,i] for j in clusters))
-
+    prob.addConstraint(y[i] >= min(max(0, trips_from_i[i] - trips_to_j[i]), M))
+    # bike cts
+    prob.addConstraint([y[i] >= x[i]]) 
+    prob.addConstraint([y[i] <= z[i]])
+    # station cts
+    prob.addConstraint([z[i] >= x[i]])
+    prob.addConstraint([z[i] <= M*x[i]])
+    
 # total cost constraint
 prob.addConstraint(total_cost <= budget)
 
 # environmental constraint
 prob.addConstraint(environmental_value >= ep*fuel_cost)
 
-# bike movement constraint
-
-# prob.addConstraint(y[i] >= xp.Sum(bikes_from_i[i]-bikes_to_j[i]) for j in clusters)
-
 # Budget limit exception
 # prob.addConstraint(total_cost <= l[1]*social_value + l[2]*environmental_value)
 
 #%%
+cluster_weight = {}
+for i in clusters:
+    cluster_weight[i] = sum(
+        (p[k] * a(i, k)) / (2 * total_trips)
+        for k in building_types
+    )
+
 # Objective function
-social_value = xp.Sum(((p[k]*a(i,k))/(2*total_trips)) 
-                      for i in clusters for k in building_types)*xp.Sum((bikes_from_i[i] + bikes_to_j[i])*y[i] 
-                                                                        for j in clusters)
+social_value = xp.Sum(cluster_weight[i]*(bikes_from_i[i] + bikes_to_j[i])*y[i] 
+                                                                        for i in clusters)
 
 
 prob.setObjective(social_value, sense=xp.maximize)
