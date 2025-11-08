@@ -141,3 +141,12 @@ prob.write("problem","lp")
 #%%
 xp.setOutputEnabled(True)
 prob.solve()
+
+for i in clusters:
+    if y[i].getSolution() > 0:
+        print(i, y[i].getSolution())
+    
+for i in clusters:
+    print(f"Cluster {i:3d} | Weight = {cluster_weight[i]:.20f}")
+    
+print("Total trips:", total_trips)

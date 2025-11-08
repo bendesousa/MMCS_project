@@ -19,3 +19,5 @@ a_dict = {(row['assigned cluster'], row['category']): row['count']
 def a(i,k):
     return a_dict.get((i,k), 0)
 
+
+

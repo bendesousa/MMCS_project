@@ -1,6 +1,6 @@
 \Written from user model (presolvestate=0x680061)
 \Problem name: basic_bikes                                                      
-\FICO Xpress v9.7.0, Hyper, written 18:19:51, Nov 8, 2025
+\FICO Xpress v9.7.0, Hyper, written 18:46:16, Nov 8, 2025
 
 Maximize
 
