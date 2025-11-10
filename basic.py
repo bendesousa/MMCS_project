@@ -126,7 +126,7 @@ prob.addConstraint(environmental_value >= ep*fuel_cost)
 cluster_weight = {}
 for i in clusters:
     cluster_weight[i] = sum(
-        (p[k] * a(i, k)) / (2 * total_trips)
+        (p[k] * a(i, k))
         for k in building_types
     )
 
@@ -147,6 +147,6 @@ for i in clusters:
         print(i, y[i].getSolution())
     
 for i in clusters:
-    print(f"Cluster {i:3d} | Weight = {cluster_weight[i]:.20f}")
+    print(f"Cluster {i:3d} | Weight = {cluster_weight[i]*1000:.20f}")
     
 print("Total trips:", total_trips)
