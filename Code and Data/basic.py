@@ -115,7 +115,10 @@ demand_share = {i: 0.5*(bikes_from_i[i] + bikes_to_j[i])/ total_trips
 
 # demand cts
 for i in clusters:
+    # this means that any time there are more trips from i than to i, we are forced to open a station
+    # even if the station only covered ~50 POIs, we are forcing it to open
     prob.addConstraint(y[i] >= min(max(0, trips_from_i[i] - trips_to_j[i]), M))
+    # prob.addConstraint(y[i] >= min(max(0, trips_from_i[i] - trips_to_j[i]), M) * x[i])
     # bike cts
     prob.addConstraint([y[i] >= x[i]]) 
     prob.addConstraint([y[i] <= z[i]])
@@ -142,6 +145,20 @@ for i in clusters:
         for k in building_types
     )
 
+"""
+# I think this will fix our objective function 
+cluster_weight = {}
+for i in clusters:
+    cluster_weight[i] = sum(
+        # a_dict is keyed by cluster, building type name, not building type index
+        # therefore, a(i, k) for k in building_types would not find a key and return 0
+        (p[k] * a(i, building_type_names[k]))
+        for k in building_types
+    )
+    # this meant that down below, xp.Sum(cluster_weight[i]*(bikes_from_i[i] + bikes_to_j[i])*y[i] 
+                                                                        for i in clusters)
+                                                                        = 0*(mij + mji)*yi = 0 for all i in clusters
+"""
 # Objective function
 social_value = xp.Sum(cluster_weight[i]*(bikes_from_i[i] + bikes_to_j[i])*y[i] 
                                                                         for i in clusters)
