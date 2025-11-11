@@ -96,6 +96,16 @@ total_cost = manufacture_cost[0]*xp.Sum(z[i] for i in clusters) + manufacture_co
 #environmental value
 environmental_value = car_users*user_cost*xp.Sum((trips_from_i[i]*h*x[i]) for i in clusters)
 
+#possible fix for environmental comparison. constraint thoughts below
+#for i in clusters:
+#    environmental_value_i = car_users * user_cost * trips_from_i[i] * h * x[i]
+#proportional environmental values with respect to cost
+#for i in clusters:
+#    environmental_value_i = car_users * trips_from_i[i] * h * fuel_cost * x[i]
+
+
+
+
 # Proportion of demand for a station at cluster i
 demand_share = {i: 0.5*(bikes_from_i[i] + bikes_to_j[i])/ total_trips
                 for i in clusters}
@@ -117,7 +127,9 @@ for i in clusters:
 prob.addConstraint(total_cost <= budget)
 
 # environmental constraint
-prob.addConstraint(environmental_value >= ep*fuel_cost)
+#prob.addConstraint(environmental_value >= ep*fuel_cost)
+prob.addConstraint(environmental_value_i >= ep * fuel_cost)
+#prob.addConstraint(environmental_value_i >= ep * fuel_cost * x[i]) proportional to cost
 
 # Budget limit exception
 # prob.addConstraint(total_cost <= l[1]*social_value + l[2]*environmental_value)
