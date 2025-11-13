@@ -2,7 +2,7 @@ import xpress as xp
 import pandas as pd
 import numpy as np
 from building_counts import a 
-xp.init('/Applications/FICO Xpress/Xpress Workbench.app/Contents/Resources/xpressmp/bin/xpauth.xpr')
+# xp.init('/Applications/FICO Xpress/Xpress Workbench.app/Contents/Resources/xpressmp/bin/xpauth.xpr')
 
 #%%
 prob = xp.problem(name='periodic_bikes')
