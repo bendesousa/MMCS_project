@@ -2,7 +2,7 @@ import xpress as xp
 import pandas as pd
 import numpy as np
 from building_counts import a 
-# xp.init('/Applications/FICO Xpress/Xpress Workbench.app/Contents/Resources/xpressmp/bin/xpauth.xpr')
+# xp.init('C:/xpressmp//bin/xpauth.xpr')
 
 #%%
 prob = xp.problem(name='periodic_bikes')
@@ -23,28 +23,42 @@ building_type_names = ['residential', 'commercial', 'school',
 
 #%%
 # Defining parameters
-# some placeholder values
-manufacture_cost = [500, 40]
-hangar = 4000/6
-user_cost = 15
-car_users = 0.6
-budget = 1800000
-# need to add data for trip times
+# variable station costs
+manufacture_cost = [500, 4000]
+
+# numbers found through extensive research
+user_cost = 0.1
+car_users = 0.41
+budget = 3750000
+# average trip time
 h = 21.55
 # dock maximums
 #M = [1,2,3,4,5,6,7,8,9,10]
 # Building weighting
-p = [1,5,7,10,5,10]
+p = [2,2124,55,4602, 2073,2707]
+# residential = 2
+# commercial =(population + number of tourists/4)/number of commercial
+# (530,680 + 2,560,000/4)/ 551 = 2124 
+# school = (number of 16-18 + admin staff)/number of schools
+# 6679 + 3669/ 188 = 55 
+# university = 128,869/28 = 4602
+# hospital = vistor numbers/ number of hospitals
+# 530,680/ 8 / 2 / 16 = 2073
+# library = total library memberships / number of libraries
+# library = 530,680/4 /49 = 2707
+
 # environmental proportion
-ep = 0.5
+ep = 0.000124
+
 # car fuel cost
-fuel_cost = 10
-# periodic degradation for obj function
+fuel_cost = 86538603
+
+# periodic degradation for obj function (prioritize better stations first, coverage second)
 degradation_factors = [1, .9, .8]
 # periodic % budget available
 periodic_pct_budget = [0.5, 0.3, 0.2]
-#Max docks for a station
-M = 70
+#Max hangars for a station
+M = 11
 
 # Trips from cluster i to j
 m = np.load('m_matrix.npy')
@@ -81,7 +95,7 @@ x_t_i = {(i, t): prob.addVariable(vartype = xp.binary, name='x_{0}_{1}'.format(i
 # Number of bikes in station added period t at cluster i
 y_t_i = {(i, t): prob.addVariable(vartype = xp.integer, name='y_{0}_{1}'.format(i, t))
                 for i in clusters for t in periods}
-# Number of docks in station at cluster i
+# Number of hangars in station at cluster i
 z_t_i = {(i, t): prob.addVariable(vartype = xp.integer, name='z_{0}_{1}'.format(i, t))
                 for i in clusters for t in periods}
 # make certain equations easier on ourselves by summing over periods when necessary
@@ -101,7 +115,7 @@ bikes_to_j = {j: trips_to_j[j] for j in clusters}
 total_trips = m.sum()
 
 # Total cost
-total_cost = (manufacture_cost[0]*xp.Sum(z[i] for i in clusters) + manufacture_cost[1]*xp.Sum(y[i] for i in clusters) + hangar*xp.Sum(z[i] for i in clusters))
+total_cost = (manufacture_cost[0]*xp.Sum(y[i] for i in clusters) + manufacture_cost[1]*xp.Sum(z[i] for i in clusters))
 
 
 
@@ -127,7 +141,7 @@ min_coverage = xp.Sum(x[i] * building_totals[i] for i in clusters)
 period_costs = {t: 0 for t in periods}
 for i in clusters:
     for t in periods:
-        period_costs[t] += (manufacture_cost[0]*xp.Sum(z_t_i[i, t]) + manufacture_cost[1]*xp.Sum(y_t_i[i, t]) + hangar * xp.Sum(x_t_i[i, t]))
+        period_costs[t] += (manufacture_cost[0]*xp.Sum(y_t_i[i, t]) + manufacture_cost[1]*xp.Sum(z_t_i[i, t]))
 
 # Proportion of demand for a station at cluster i
 demand_share = {i: 0.5*(bikes_from_i[i] + bikes_to_j[i])/ total_trips
@@ -140,16 +154,16 @@ demand_share = {i: 0.5*(bikes_from_i[i] + bikes_to_j[i])/ total_trips
 for i in clusters:
     for t in periods:
         # if station during t at i, then enough bikes to cover demand
-        prob.addConstraint(y_t_i[i, t] >= min(max(0, trips_from_i[i] - trips_to_j[i]), M) * x_t_i[i, t])
+        prob.addConstraint(y_t_i[i, t] >= min(max(0, trips_from_i[i] - trips_to_j[i]), M*6) * x_t_i[i, t])
         # bike cts
-        # prob.addConstraint([y_t_i[i, t] >= x_t_i[i, t]]) 
-        prob.addConstraint([y_t_i[i, t] <= z_t_i[i, t]])
+        # open stations have at most 5 bikes per hangar for parking and accounting for unexpected surge in arrivals
+        prob.addConstraint([y_t_i[i, t] <= 5*z_t_i[i, t]])
         # station cts
+        # open stations have at least one hangar and no more than 11 hangars according to historic system's station capacities
         prob.addConstraint([z_t_i[i, t] >= x_t_i[i, t]])
         prob.addConstraint([z_t_i[i, t] <= M*x_t_i[i, t]])
-        # Slight relaxation of historic station min capacity 
-        prob.addConstraint([z_t_i[i, t] >= 10*x_t_i[i, t]])
-        # Ensuring empty docks for parking and accounting for unexpected surge in arrivals
+
+        # Ensuring stations open with at least 5 bikes
         prob.addConstraint([y_t_i[i, t] >= 5*x_t_i[i, t]])
     
 # total cost constraint
@@ -202,6 +216,21 @@ prob.write("periodic_bikes","lp")
 #%%
 xp.setOutputEnabled(True)
 prob.solve()
+# initialize list of cluster-wise results
+row_results = []
+for i in clusters:
+    # index by cluster
+    curr_cluster = {'cluster': i}
+    for t in periods:
+        # get whether opened in t, bikes opened with in t, and hangars opened with in t results for cluster i
+        curr_cluster[f"opened during {t}"] = x_t_i[i,t].getSolution()
+        curr_cluster[f"bikes added during {t}"] = y_t_i[i,t].getSolution()
+        curr_cluster[f"hangars added during {t}"] = z_t_i[i,t].getSolution()
+    # add to current cluster results to list of cluster-wise results
+    row_results.append(curr_cluster)
+# create data frame with cluster-wise results and save as csv
+results_frame = pd.DataFrame(row_results)
+results_frame.to_csv('periodic_results_by_cluster.csv', index=False)
 
 for t in periods:
     for i in clusters:
