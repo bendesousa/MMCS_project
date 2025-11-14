@@ -21,22 +21,37 @@ building_type_names = ['residential', 'commercial', 'school',
 
 #%%
 # Defining parameters
-# some placeholder values
+# taken from online source
 manufacture_cost = [500, 40]
+# taken from online source
+
 hangar = 4000
-user_cost = 15
-car_users = 0.6
-budget = 1800000
-# need to add data for trip times
+
+user_cost = 0.1
+car_users = 0.41
+budget = 3750000
+# average of all of the trip times
 h = 21.55
 # dock maximums
 #M = [1,2,3,4,5,6,7,8,9,10]
 # Building weighting
-p = [1,5,7,10,5,10]
+p = [2,2124,55,4602, 2073,2707]
+# residential = 2
+# commercial =(population + number of tourists/4)/number of commercial
+# (530,680 + 2,560,000/4)/ 551 = 2124 
+# school = (number of 16-18 + admin staff)/number of schools
+# 6679 + 3669/ 188 = 55 
+# university = 128,869/28 = 4602
+# hospital = vistor numbers/ number of hospitals
+# 530,680/ 8 / 2 / 16 = 2073
+# library = total library memberships / number of libraries
+# library = 530,680/4 /49 = 2707
+
 # environmental proportion
-ep = 0.5
+ep = 0.000147
+# ep = 0.00001
 # car fuel cost
-fuel_cost = 10
+fuel_cost = 86538603
 
 #Max docks for a station
 M = 70
@@ -96,7 +111,7 @@ total_cost = manufacture_cost[0]*xp.Sum(z[i] for i in clusters) + manufacture_co
 
 for i in clusters:
     if x[i] == 1:
-        total_cost += hangar
+        total_cost += (hangar/6*z[i])
 
 #environmental value
 # environmental_value = car_users*user_cost*xp.Sum((trips_from_i[i]*h*x[i]) for i in clusters)
@@ -127,7 +142,6 @@ demand_share = {i: 0.5*(bikes_from_i[i] + bikes_to_j[i])/ total_trips
 for i in clusters:
     # this means that any time there are more trips from i than to i, we are forced to open a station
     # even if the station only covered ~50 POIs, we are forcing it to open
-    # prob.addConstraint(y[i] >= min(max(0, trips_from_i[i] - trips_to_j[i]), M))
     prob.addConstraint(y[i] >= min(max(0, trips_from_i[i] - trips_to_j[i]), M) * x[i])
     # bike cts
     prob.addConstraint([y[i] >= x[i]]) 
@@ -139,12 +153,14 @@ for i in clusters:
     prob.addConstraint([z[i] >= 10*x[i]])
     # Ensuring empty docks for parking and accounting for unexpected surge in arrivals
     prob.addConstraint([y[i] >= 5*x[i]])
+ 
     
 # total cost constraint
+###### Binding constraint #########
 prob.addConstraint(total_cost <= budget)
 
 # environmental constraint
-# prob.addConstraint(environmental_value >= ep*fuel_cost)
+###### Binding constraint #########
 prob.addConstraint(environmental_value_total >= ep*fuel_cost)
 #prob.addConstraint(environmental_value_i >= ep * fuel_cost * x[i]) proportional to cost
 
@@ -153,15 +169,9 @@ prob.addConstraint(environmental_value_total >= ep*fuel_cost)
 
 # Minimum coverage
 # approximately 75% coverage of POIs
+###### Binding constraint #########
 prob.addConstraint(min_coverage >= 25000)
 #%%
-# cluster_weight = {}
-# for i in clusters:
-#     cluster_weight[i] = sum(
-#         (p[k] * a(i, k))
-#         for k in building_types
-#     )
-
 
 # I think this will fix our objective function 
 cluster_weight = {}
@@ -171,10 +181,7 @@ for i in clusters:
         # therefore, a(i, k) for k in building_types would not find a key and return 0
         (p[k] * a(i, building_type_names[k]))
         for k in building_types
-    )
-    # # this meant that down below, xp.Sum(cluster_weight[i]*(bikes_from_i[i] + bikes_to_j[i])*y[i] 
-    #                                                                     for i in clusters)
-    #                                                                     = 0*(mij + mji)*yi = 0 for all i in clusters
+    )                                                                 
 
 # Objective function
 social_value = xp.Sum(cluster_weight[i]*(bikes_from_i[i] + bikes_to_j[i])*y[i] 
@@ -190,20 +197,36 @@ prob.solve()
 
 for i in clusters:
     if y[i].getSolution() > 0:
-        print(i, y[i].getSolution())
+        print("The number of bikes placed at cluster", i, ": ", y[i].getSolution())
         
 print("")
         
 for i in clusters:
     if z[i].getSolution() > 0:
-        print(i, z[i].getSolution())
+        print("The number of docks opened at cluster ", i, ": ", z[i].getSolution())
+        
+print("")
     
 # for i in clusters:
 #     print(f"Cluster {i:3d} | Weight = {cluster_weight[i]*1000:.20f}")
     
-print(prob.getSolution(total_cost))
+print("The total cost of this project is : £", prob.getSolution(total_cost))
 
-# for i in clusters:
-#     if environmental_value_i[i]
+print("")
+
+total_stations = sum(prob.getSolution(x[i]) for i in clusters)
+print("The total number of stations opened is:", total_stations)
+
+print("")
+
+environmental_value_value = sum(
+    car_users * user_cost * trips_from_i[i] * h * prob.getSolution(x[i])
+    for i in clusters
+)
+print("The total environmental value is:", environmental_value_value)
+
+print("")
+
+print("The coverage of the the POIs is:", prob.getSolution(min_coverage))
 
 # print("Total trips:", total_trips)
