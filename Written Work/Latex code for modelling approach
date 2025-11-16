@@ -1,0 +1,129 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage{amsmath}
+\usepackage[a4paper, margin=3cm]{geometry}
+
+\title{MMCS PROJECT}
+\author{GROUP 5}
+\date{}
+
+\begin{document}
+\maketitle
+\setlength{\parindent}{0pt}
+In order to model Edinburgh's new bike scheme, we had to apply a clustered net over the city, where each cluster represents a candidate bike station. This was done by assigning the 33,669 provided points of interest (POIs) to 250 clusters using the K-means clustering algorithm. This algorithm achieves this by randomly plotting K (250) centroids in the data space (latitude and longitude of the POIs), assigning data points to the closest centroid, re-plotting the centroids to the average of their respective data points, and repeating until a stable solution is reached. Typically, this algorithm is run over a large number of iterations (300) and gives the result with the corresponding least sum of squared distance between each data point and its assigned centroid. For this application, centroids were weighted towards, in descending order, libraries, schools and universities, commercial and hospital buildings, and residences by creating duplicates of each POI according to their category before clustering, in an attempt to create candidate stations with more convenient access to POIs with higher predicted demand. \\ \\
+Based on this, we assume the following indexes: \\
+$k\in\{1,...,6\}=\{\text{residential, commercial, school, university, hospital, library}\}$ \\
+$i,j\in \{1,2,...,n\}$ \\
+$t\in\{1,...,T\}$ \\ 
+where n, T represent the respective parameters of those defined below: \\ \\
+n: total number of clusters \\
+T: number of periods in which the plan is expected to be completed \\
+$M_i=$ maximum number of hangars in station $i$ \\ 
+$s_i=$ minimum number of bikes in each station\\
+$S_i=$ maximum number of bikes in a hangar \\
+$m_{ij}=$ average number of bike trips from cluster $i$ to cluster $j$ in a month \\
+$h_{ij}=$ average time to go from cluster $i$ to $j$ \\
+$p_k=$ weight of type $k$ POI \\
+$\alpha_{i,k}=$ number of type $k$ POIs in cluster $i$ \\
+$c_1=$ cost of installing a hangar \\
+$c_2=$ cost of installing a bike \\
+$c_{car}=$ car fuel cost for 1 minute of driving\\
+$c_{total}=$ total cost of car fuel for all residents in a month \\
+$c_{max}=$ total budget for the project \\ 
+$p'=$ proportion of the hangar that is initially occupied by bikes \\
+$p_{car}=$ proportion of the population that initially uses a car\\
+$\hat{p}=$ proportion of the total fuel expenditures of cars that we want to eliminate \\ 
+$q_t=$ percentage of the total budget available during period $t$ \\
+$d_t=$ dropping percentage for social value when opening a station during period $t$ \\ \\
+The reason the last parameter $d_t$ is defined is to give priority to the most important clusters and cover them from the very first month. Obviously $q_t,d_t\in\left[0,1\right]$ and $\sum_{t=1}^Tq_t=1$. 
+\\ \\
+Also, for $m_{ij}$ we need to consider that we don't have data for all possible routs, as the previous model lacked full coverage. Hence, we create an $n\times n$ matrix $\mathcal{M}$ approximating the missing data, for which the rows represent the starting cluster, and the columns the finishing one. We split this matrix into four parts. The values at the top left corner represent the trips where a station used to exist in both clusters $i$ and $j$. In the top right (or bottom left) corner are the values where a station wasn't installed in the cluster $j$ (or $i$), and they are defined as the average of all the trips that started from cluster $i$ (or finished in $j$). The bottom right corner is constituted by the values of the trips where neither of the 2 clusters used to have a station in them during the time of the old scheme, and they are estimated as the mean of all trips per station. So, if $N$ is the number of clusters that used to include a station in the old model, then such a matrix would look like the following:
+$$
+\mathcal{M}_{n\times n} = \begin{pmatrix}
+m_{11} & \cdots & m_{1N} & \frac{1}{N}\sum_{l=1}^Nm_{1l} & \cdots & \frac{1}{N}\sum_{l=1}^Nm_{1l}\\
+\vdots & \ddots & \vdots & \vdots & \ddots & \vdots\\
+m_{N1} & \cdots & m_{NN}  & \frac{1}{N}\sum_{=1}^Nm_{Nl} & \cdots & \frac{1}{N}\sum_{l=1}^Nm_{Nl} \\
+\frac{1}{N}\sum_{r=1}^Nm_{r1} &\cdots &\frac{1}{N}\sum_{r=1}^Nm_{rN} & \frac{1}{N^2}\sum_{r=1}^N\sum_{l=1}^Nm_{rl} & \cdots & \frac{1}{N^2}\sum_{r=1}^N\sum_{l=1}^Nm_{rl} \\
+\vdots & \ddots & \vdots & \vdots & \ddots & \vdots\\
+\frac{1}{N}\sum_{r=1}^Nm_{r1} &\cdots &\frac{1}{N}\sum_{r=1}^Nm_{rN} & \frac{1}{N^2}\sum_{r=1}^N\sum_{l=1}^Nm_{rl} & \cdots & \frac{1}{N^2}\sum_{r=1}^N\sum_{l=1}^Nm_{rl}
+\end{pmatrix}
+$$ \\
+In this way, we also downgrade the worth of stations that underperformed, as their usage is estimated to be less than that of other potential stations in new locations. \\ \\ For clearance, we will still use the term $m_{ij}$ in order to describe the average number of trips from cluster $i$ to $j$, independently of the existence of a station in these clusters in the old scheme or not. Following this, we can clearly see that:
+$$\sum_{j=1}^nm_{ij}=\text{ average number of bike trips starting from cluster i in a month}$$
+$$\sum_{i=1}^nm_{ij}=\text{ average number of bike trips ending up in cluster j in a month}$$
+Therefore: 
+$$\sum_{j=1}^n (m_{ij}+m_{ji})=\text{ total usage of a station in cluster $i$}$$
+\\
+Having finished with the parameters, we can now define the variables of the problem: \\
+$x_{i,t} =
+\begin{cases}
+1, & \text{If a station is placed in cluster $i$ during period t} ,\\
+0,  & \text{Otherwise }
+\end{cases}$
+\\
+$y_{i,t}=\text{number of bikes in station } i \text{ during period }t$
+\\
+$z_{i,t}=\text{number of hangars installed in station }i \text{ during period } t$ 
+\\
+\\
+Out of these variables, we can also define the following:\\
+$\bar{x}_i = \sum_{t=1}^Tx_{i,t} :$ indication of if a station is placed in cluster $i$ or not \\
+$\bar{y}_i = \sum_{t=1}^Ty_{i,t} :$ total number of bikes placed in station $i$ \\
+$\bar{z}_i = \sum_{t=1}^Tz_{i,t} :$ total number of hangars installed in station $i$ 
+\\ \\
+Considering all the above, we will try to estimate the Social and Environmental values of this scheme, as well as its Total cost. \\
+The Social Value of a station in cluster $i$ is obviously dependent on the number of POIs it covers, the importance of these POIs, the estimated usage of the station and the number of bikes at it. Hence:
+$$\text{Social Value}=\sum_{t=1}^T\sum_{i=1}^n\sum_{k=1}^6d_tp_k\alpha_{ik}\sum_{j=1}^n (m_{ij}+m_{ji})y_{i,t}$$
+As for the Environmental Value, we defined it as the total amount of money that we deterred from being spent in car fuel in a month:
+$$\text{Environmental Value}=p_{car}c_{car}\sum_{i=1}^n\sum_{j=1}^nm_{ij}h_{ij}\bar{x}_i$$
+And finally, the total cost is obviously:
+$$\text{Total Cost}=c_1\sum_{i=1}^n\bar{z}_i+c_2\sum_{i=1}^n\bar{y}_i$$
+We seek to maximize the former two values, while also minimizing the total cost. In order to achieve that, we set the Social Value to be our objective function and we constraint the remaining ones.
+\\ \\
+Firstly, we want the monetary amount of the Environmental Value to be greater than a small proportion of the total money expended in car fuel, hence:
+$$\text{Environmental Value }\geq \hat{p}c_{total} \ \ \ \ (1)$$ 
+Secondly, the Total Cost should not exceed the given budget, and we also want to allocate our expenses among all the periods, which gives us the following constraints: 
+$$\text{Total Cost} \leq c_{max} \ \ \ \ (2) \ \ \ \ \ \ \ \ \ \ \sum_{i=1}^n(c_1z_{i,t}+c_2y_{i,t}) \le q_tc_{max} \ \ \ \ (3) $$
+It is also apparent that a station is supposed to be built only in one period, and it is inefficient to build more than one station in the same cluster, so:   \ \   
+$\bar{x}_i \leq 1 \ \  (4)$ \\ \\
+We also want to consider that in order to install the hangars we need to have a station installed there. On top of that, we don't want a station to include more than a specific number of hangars, in order for our installment expenses to be allocated more evenly throughout the city:
+$$x_{i,t}\leq z_{i,t} \leq M_ix_{i,t} \ \ \ \ (5)$$
+The adequacy of bikes in stations is important as well, so we need a minimum number of bikes in each one, and enough bikes to satisfy the station's demand. In the meantime we should also make sure that the bikes can fit in the hangars, and leave some space for any bike arrivals by the public. Therefore: 
+$$s_ix_{i,t}\leq y_{i,t}\leq p'S_iz_{i,t}  \ \ \ (6) \ \ \ \ \ \ \ y_{i,t}\geq \sum_{j=1}^n(m_{ij}-m_{ji})x_{i,t} \ \ \ (7)$$ 
+In total, the optimization problem turns out to be: 
+$$\text{Maximize: \  Social Value}$$
+$$\text{Subject to: \  (1)-(7)}$$
+
+The following is a table indicating all the values for the parameters that were not taken straight from the data of the former plan:
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|l||l|l||l|l|}
+\hline
+\textbf{Parameter} & \textbf{Value} &
+\textbf{Parameter} & \textbf{Value} &
+\textbf{Parameter} & \textbf{Value} \\
+\hline
+$n$  & 250 & $p_4$  & 4602 & $p_{car}$  & 0.41 \\
+\hline
+$T$  & 3 & $p_5$  & 2073 & $\hat{p}$  & 0.000124 \\
+\hline
+$M_i$  & 11 & $p_6$  & 2707 & $q_1$  & 0.5 \\
+\hline
+$s_i$ & 5 & $c_1$ & \pounds 4000 & $q_2$ & 0.3 \\
+\hline
+$S_i$ & 6 & $c_2$ &  \pounds 500 & $q_3$ & 0.2 \\
+\hline
+$h_{ij}$ & 21.55 min & $c_{car}$ & \pounds 0.1 & $d_1$ & 1 \\
+\hline
+$p_{1}$ & 2 & $c_{total}$ & \pounds 86,538,603 & $d_2$ & 0.9 \\
+\hline
+$p_{2}$ & 2124 & $c_{max}$ & \pounds 3,750,000 & $d_3$ & 0.8 \\
+\hline
+$p_{3}$ & 55 & $p'$ & 0.83 &      &     \\
+\hline
+\end{tabular}
+\end{table}
+\\
+$T,\ s_i, \ p', \ \hat{p}, \ q_t, \ d_t$ were chosen arbitrarily, while n was assumed to be an ideal number in order to create all the potential locations for a new station in close proximity with each other. \\
+$h_{ij}$ was estimated to be the average of the historic data in any case. The values for the rest of the parameters were taken from outside sources in order to make the model as neat as possible.
+\end{document}
