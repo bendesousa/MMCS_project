@@ -2,6 +2,7 @@ import xpress as xp
 import pandas as pd
 import numpy as np
 from building_counts import a 
+import matplotlib.pyplot as plt 
 #xp.init('C:/xpressmp//bin/xpauth.xpr')
 
 #%%
@@ -54,7 +55,7 @@ ep = 0.000147
 fuel_cost = 86538603
 
 #Max docks for a station
-M = 70
+M = 66
 
 # Trips from cluster i to j
 m = np.load('m_matrix.npy')
@@ -145,20 +146,21 @@ for i in clusters:
     prob.addConstraint(y[i] >= min(max(0, trips_from_i[i] - trips_to_j[i]), M) * x[i])
     # bike cts
     prob.addConstraint([y[i] >= x[i]]) 
-    prob.addConstraint([y[i] <= z[i]])
+    prob.addConstraint([y[i] <= 5*z[i]])
     # station cts
     prob.addConstraint([z[i] >= x[i]])
     prob.addConstraint([z[i] <= M*x[i]])
     # Slight relaxation of historic station min capacity 
-    prob.addConstraint([z[i] >= 10*x[i]])
+    # prob.addConstraint([z[i] >= x[i]])
     # Ensuring empty docks for parking and accounting for unexpected surge in arrivals
     prob.addConstraint([y[i] >= 5*x[i]])
  
     
 # total cost constraint
 ###### Binding constraint #########
-prob.addConstraint(total_cost <= budget)
-
+cost_cts = xp.constraint(total_cost <= budget)
+prob.addConstraint(cost_cts)
+ 
 # environmental constraint
 ###### Binding constraint #########
 prob.addConstraint(environmental_value_total >= ep*fuel_cost)
@@ -170,7 +172,8 @@ prob.addConstraint(environmental_value_total >= ep*fuel_cost)
 # Minimum coverage
 # approximately 75% coverage of POIs
 ###### Binding constraint #########
-prob.addConstraint(min_coverage >= 25000)
+# coverage_cts = xp.constraint(min_coverage >= 25000)
+# prob.addConstraint(coverage_cts)
 #%%
 
 # I think this will fix our objective function 
@@ -191,9 +194,31 @@ social_value = xp.Sum(cluster_weight[i]*(bikes_from_i[i] + bikes_to_j[i])*y[i]
 prob.setObjective(social_value, sense=xp.maximize)
 
 prob.write("problem","lp")
+
+######################Sensitivity analysis ##############################
+############Budget 
+poss_budgets = [1750000, 2250000, 2750000, 3250000, 3750000, 4250000, 4750000, 5250000, 5750000, 6250000, 6750000, 7250000, 7750000, 8250000 ]
+results = []
+
+for b in poss_budgets:
+    cost_cts.rhs = b
+    xp.setOutputEnabled(True)
+    prob.solve()
+    social_value = prob.getObjVal()
+    coverage_val = prob.getSolution(min_coverage)
+    
+    print(f'Budget {b}: Objective = {social_value}, Cluster coverage = {coverage_val}')
+    
+    results.append({
+        "budget": b,
+        "objective": social_value,
+        "coverage": coverage_val
+    })
+    
+######################Sensitivity analysis##############################
 #%%
-xp.setOutputEnabled(True)
-prob.solve()
+# xp.setOutputEnabled(True)
+# prob.solve()
 
 for i in clusters:
     if y[i].getSolution() > 0:
@@ -230,3 +255,13 @@ print("")
 print("The coverage of the the POIs is:", prob.getSolution(min_coverage))
 
 # print("Total trips:", total_trips)
+df = pd.DataFrame(results)
+plt.figure(figsize=(10,5))
+# plt.plot(df["budget"], df["objective"], marker="o", label="Objective")
+plt.plot(df["budget"], df["coverage"], marker="x", label="Cluster coverage")
+plt.xlabel("Budget")
+plt.ylabel("Value")
+plt.title("Sensitivity of Objective and Cluster Coverage to Budget")
+plt.legend()
+plt.grid(True)
+plt.show()

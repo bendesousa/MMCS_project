@@ -1,6 +1,6 @@
 \Written from user model (presolvestate=0x680061)
 \Problem name: periodic_bikes                                                   
-\FICO Xpress v9.7.0, Hyper, written 16:41:55, Nov 14, 2025
+\FICO Xpress v9.7.0, Hyper, written 0:49:15, Nov 17, 2025
 
 Maximize
 __OBJ___: 252120 y_2_0 + 226908 y_2_1 + 201696 y_2_2 + 8565750 y_3_0 + 7709175 y_3_1
