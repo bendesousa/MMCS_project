@@ -15,26 +15,50 @@ Based on this, we assume the following indexes: \\
 $k\in\{1,...,6\}=\{\text{residential, commercial, school, university, hospital, library}\}$ \\
 $i,j\in \{1,2,...,n\}$ \\
 $t\in\{1,...,T\}$ \\ 
-where n, T represent the respective parameters of those defined below: \\ \\
-n: total number of clusters \\
-T: number of periods in which the plan is expected to be completed \\
-$M_i=$ maximum number of hangars in station $i$ \\ 
-$s_i=$ minimum number of bikes in each station\\
-$S_i=$ maximum number of bikes in a hangar \\
-$m_{ij}=$ average number of bike trips from cluster $i$ to cluster $j$ in a month \\
-$h_{ij}=$ average time to go from cluster $i$ to $j$ \\
-$p_k=$ weight of type $k$ POI \\
-$\alpha_{i,k}=$ number of type $k$ POIs in cluster $i$ \\
-$c_1=$ cost of installing a hangar \\
-$c_2=$ cost of installing a bike \\
-$c_{car}=$ car fuel cost for 1 minute of driving\\
-$c_{total}=$ total cost of car fuel for all residents in a month \\
-$c_{max}=$ total budget for the project \\ 
-$p'=$ proportion of the hangar that is initially occupied by bikes \\
-$p_{car}=$ proportion of the population that initially uses a car\\
-$\hat{p}=$ proportion of the total fuel expenditures of cars that we want to eliminate \\ 
-$q_t=$ percentage of the total budget available during period $t$ \\
-$d_t=$ dropping percentage for social value when opening a station during period $t$ \\ \\
+where n, T represent the respective parameters of those defined below:
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{2}{|c|}{\textbf{General Parameters}} \\
+\hline
+$n$ & total number of clusters \\
+$T$ & number of periods in which the plan is expected to be completed \\
+\hline
+\multicolumn{2}{|c|}{\textbf{Parameters for hangars and bikes}} \\
+\hline
+$M_i$ &  maximum number of hangars in station $i$ \\
+$s_i$ &  minimum number of bikes in each station\\
+$S_i$ & maximum number of bikes in a hangar \\
+$m_{ij}$ & average number of bike trips from cluster $i$ to cluster $j$ in a month \\
+$h_{ij}$ & average time to go from cluster $i$ to $j$ \\ 
+\hline
+\multicolumn{2}{|c|}{\textbf{POI Parameters}} \\
+\hline
+$p_k$ & weight of type $k$ POI \\
+$\alpha_{i,k}$ & number of type $k$ POIs in cluster $i$ \\
+$L$ & minimum number of POI's we want to cover \\
+\hline
+\multicolumn{2}{|c|}{\textbf{Cost Parameters}} 
+\\
+\hline
+$c_1$ & cost of installing a hangar \\
+$c_2$ & cost of installing a bike \\
+$c_{car}$ & car fuel cost for 1 minute of driving\\
+$c_{total}$ & total cost of car fuel for all residents in a month \\
+$c_{max}$ & total budget for the project \\ 
+\hline
+\multicolumn{2}{|c|}{\textbf{Proportional Parameters}} \\
+\hline
+$p'$ & proportion of the hangar that is initially occupied by bikes \\
+$p_{car}$ & proportion of the population that initially uses a car\\
+$\hat{p}$ & proportion of the total fuel expenditures of cars that we want to eliminate \\ 
+$q_t$ & percentage of the total budget available during period $t$ \\
+$d_t$ & dropping percentage for social value when opening a station during period $t$
+\\
+\hline
+\end{tabular}
+\end{table} \\ \\
 The reason the last parameter $d_t$ is defined is to give priority to the most important clusters and cover them from the very first month. Obviously $q_t,d_t\in\left[0,1\right]$ and $\sum_{t=1}^Tq_t=1$. 
 \\ \\
 Also, for $m_{ij}$ we need to consider that we don't have data for all possible routs, as the previous model lacked full coverage. Hence, we create an $n\times n$ matrix $\mathcal{M}$ approximating the missing data, for which the rows represent the starting cluster, and the columns the finishing one. We split this matrix into four parts. The values at the top left corner represent the trips where a station used to exist in both clusters $i$ and $j$. In the top right (or bottom left) corner are the values where a station wasn't installed in the cluster $j$ (or $i$), and they are defined as the average of all the trips that started from cluster $i$ (or finished in $j$). The bottom right corner is constituted by the values of the trips where neither of the 2 clusters used to have a station in them during the time of the old scheme, and they are estimated as the mean of all trips per station. So, if $N$ is the number of clusters that used to include a station in the old model, then such a matrix would look like the following:
@@ -78,23 +102,63 @@ As for the Environmental Value, we defined it as the total amount of money that 
 $$\text{Environmental Value}=p_{car}c_{car}\sum_{i=1}^n\sum_{j=1}^nm_{ij}h_{ij}\bar{x}_i$$
 And finally, the total cost is obviously:
 $$\text{Total Cost}=c_1\sum_{i=1}^n\bar{z}_i+c_2\sum_{i=1}^n\bar{y}_i$$
-We seek to maximize the former two values, while also minimizing the total cost. In order to achieve that, we set the Social Value to be our objective function and we constraint the remaining ones.
+We seek to maximize the former two values, while also minimizing the total cost. In order to achieve that, we set the Social Value to be our objective function and constraint the remaining ones.
 \\ \\
 Firstly, we want the monetary amount of the Environmental Value to be greater than a small proportion of the total money expended in car fuel, hence:
 $$\text{Environmental Value }\geq \hat{p}c_{total} \ \ \ \ (1)$$ 
 Secondly, the Total Cost should not exceed the given budget, and we also want to allocate our expenses among all the periods, which gives us the following constraints: 
 $$\text{Total Cost} \leq c_{max} \ \ \ \ (2) \ \ \ \ \ \ \ \ \ \ \sum_{i=1}^n(c_1z_{i,t}+c_2y_{i,t}) \le q_tc_{max} \ \ \ \ (3) $$
-It is also apparent that a station is supposed to be built only in one period, and it is inefficient to build more than one station in the same cluster, so:   \ \   
+It is also apparent that a station is supposed to be built only in one period and it is inefficient to build more than one station in the same cluster, so:   \ \   
 $\bar{x}_i \leq 1 \ \  (4)$ \\ \\
 We also want to consider that in order to install the hangars we need to have a station installed there. On top of that, we don't want a station to include more than a specific number of hangars, in order for our installment expenses to be allocated more evenly throughout the city:
 $$x_{i,t}\leq z_{i,t} \leq M_ix_{i,t} \ \ \ \ (5)$$
-The adequacy of bikes in stations is important as well, so we need a minimum number of bikes in each one, and enough bikes to satisfy the station's demand. In the meantime we should also make sure that the bikes can fit in the hangars, and leave some space for any bike arrivals by the public. Therefore: 
+The adequacy of bikes in stations is important as well, so we need a minimum number of bikes in each one, and enough bikes to satisfy the station's demand. In the meantime, we should also make sure that the bikes can fit in the hangars, and leave some space for any bike arrivals by the public. Therefore: 
 $$s_ix_{i,t}\leq y_{i,t}\leq p'S_iz_{i,t}  \ \ \ (6) \ \ \ \ \ \ \ y_{i,t}\geq \sum_{j=1}^n(m_{ij}-m_{ji})x_{i,t} \ \ \ (7)$$ 
+Another equally important aspect to consider is that we want the newly opened stations to cover enough POIS to connect the city, which brings us to the last constraint: 
+$$\sum_{t=1}^T\sum_{i=1}^n\sum_{k=1}^6\alpha_{ik}x_{i,t}\geq L \ \ \ \ (8)$$
 In total, the optimization problem turns out to be: 
 $$\text{Maximize: \  Social Value}$$
-$$\text{Subject to: \  (1)-(7)}$$
+$$\text{Subject to: \  (1)-(8)}$$
+Now, in case we want to extend the model and include a stochastic element in it:\\ 
+We will try to run the model independently for each of the 3 periods, where the bike network is getting enriched and Edinburgh's dwellers determine the usage of each station in a monthly basis. This means that when positive, the index $t$ now also denotes the time that the code of the model runs. If $t$ is zero then we refer to data from the old scheme. Speaking of which, we were given access to each station's capacity, and it was assumed that it referred to the initial number of bikes in every station. Let us denote this value by $y_{i,0}$ for station $i$. In contrast with the vanilla model, now $y_{i,t}$ and $z_{i,t}$ are defined as the number of bikes and the number of hangars installed in cluster $i$, specifically during period $t$ respectively. Nonetheless, $x_{i,t}$ still refers to its original definition and obviously for $t\geq 1$, if $x_{i,t}=1$, then $x_{i,r}=1 \ \ \forall r\in\{t,...,T\}.$ \\ \\ 
+That being said, let's define the following parameter:
+$$m_{ij}^t=\text{ average number of trips from cluster $i$ to cluster j in the period }t, \ \ t\in\{0,1,2,3\}$$
+In any period $t$, the data that are used are taken from period $t-1$, and in the first period we use the data from period 0 unchanged. For the rest of the periods, in an effort to predict the values of $m_{ij}^t$, we assume that they are all taken by the following normal distributions: $$N\left(\frac{y_{i,t-1}+y_{j,t-1}}{y_{i,t-2}+y_{j,t-2}}m_{ij}^{t-1},\sigma^2\right), \text{ for $t=2$} \ \ \ \text{ and } \ \ \ N\left(\frac{\sum_{r=1}^{t-1}(y_{i,r}+y_{j,r})}{\sum_{r=1}^{t-2}(y_{i,r}+y_{j,r})}m_{ij}^{t-1},\sigma^2\right), \text{ for $t\in\{3,...,T\}$} $$
+and then rounded up to the closest integer. Essentially, the fractions in the mean values define a proportion of the bikes that we have in each period, relative with the previous one, affecting the total number of trips. Similarly with the vanilla model, if there are no stations in either cluster $i$ or $j$, then we let $N_t$ be the number of stations opened until period $t-1$ and $m_{ij}^t $ can be approximated by the matrix:
+$$
+\mathcal{M}_{n\times n}^t = \begin{pmatrix}
+m_{11}^t & \cdots & m_{1N_t}^t & \frac{1}{N_t}\sum_{l=1}^{N_t}m_{1l}^t & \cdots & \frac{1}{N_t}\sum_{l=1}^{N_t}m_{1l}^t\\
+\vdots & \ddots & \vdots & \vdots & \ddots & \vdots\\
+m_{N_t1}^t & \cdots & m_{N_tN_t}^t  & \frac{1}{N_t}\sum_{l=1}^{N_t}m_{N_tl}^t & \cdots & \frac{1}{N_t}\sum_{l=1}^Nm_{N_tl}^t \\
+\frac{1}{N_t}\sum_{r=1}^{N_t}m_{r1}^t &\cdots &\frac{1}{N_t}\sum_{r=1}^{N_t}m_{rN_t}^t & \frac{1}{N_t^2}\sum_{r=1}^{N_t}\sum_{l=1}^{N_t}m_{rl}^t & \cdots & \frac{1}{N_t^2}\sum_{r=1}^{N_t}\sum_{l=1}^{N_t}m_{rl}^t \\
+\vdots & \ddots & \vdots & \vdots & \ddots & \vdots\\
+\frac{1}{N_t}\sum_{r=1}^{N_t}m_{r1}^t &\cdots &\frac{1}{N_t}\sum_{r=1}^{N_t}m_{rN_t}^t & \frac{1}{N_t^2}\sum_{r=1}^{N_t}\sum_{l=1}^{N_t}m_{rl}^t & \cdots & \frac{1}{N_t^2}\sum_{r=1}^{N_t}\sum_{l=1}^{N_t}m_{rl}^t
+\end{pmatrix}
+$$
+but for clearance we will again assume that $m_{ij}^t$ denotes its intended value independently of potential approximations.
+\\ 
+Having defined all the above, the extended model for each period t is given by:
+$$\text{Maximize:} \ \ \sum_{i=1}^n\sum_{k=1}^6p_k\alpha_{ik}\sum_{j=1}^n (m_{ij}^{t-1}+m_{ji}^{t-1})y_{i,t}$$
+$$\text{Subject to:} \ \ \ \ \ p_{car}c_{car}\sum_{i=1}^n\sum_{j=1}^nm_{ij}h_{ij}x_{i,t} \geq \frac{t}{T}\hat{p}c_{total} \ \ \ \ \ (1 \backslash \text{extension})$$
+$$\sum_{i=1}^n(c_1z_{i,t}+c_2y_{i,t}) \le q_tc_{max} \ \ \ \ (3\backslash \text{extension}) $$
+$$x_{i,t}\leq \sum_{r=1}^tz_{i,r} \leq M_ix_{i,t} \ \ \ \ (5\backslash \text{extension})$$
+$$s_ix_{i,t}\leq \sum_{r=1}^ty_{i,r}\leq p'S_i\sum_{r=1}^tz_{i,r}  \ \ \ (6\backslash \text{extension})$$
+$$\sum_{r=1}^ty_{i,r}\geq \sum_{j=1}^n(m_{ij}^{t-1}-m_{ji}^{t-1})x_{i,t} \ \ \ (7\backslash \text{extension})$$
+$$\sum_{i=1}^n\sum_{k=1}^6\alpha_{ik}x_{i,t}\geq \frac{t}{T} L \ \ \ \ (8 \backslash \text{extension})$$
+\\ 
+\\ 
+\\ 
+\\ 
+\\ 
+\\ 
+\\ 
+\\
+\\ 
+\\ 
+\\
+\section*{FOR APPENDIX}
+The following is a table indicating all the values for the parameters that were not taken straight from the data of the former plan: \\
 
-The following is a table indicating all the values for the parameters that were not taken straight from the data of the former plan:
 \begin{table}[h!]
 \centering
 \begin{tabular}{|l|l||l|l||l|l|}
@@ -103,27 +167,26 @@ The following is a table indicating all the values for the parameters that were 
 \textbf{Parameter} & \textbf{Value} &
 \textbf{Parameter} & \textbf{Value} \\
 \hline
-$n$  & 250 & $p_4$  & 4602 & $p_{car}$  & 0.41 \\
+$n$  & 250 & $p_4$  & 4602 & $p'$ & 0.83 \\
 \hline
-$T$  & 3 & $p_5$  & 2073 & $\hat{p}$  & 0.000124 \\
+$T$  & 3 & $p_5$  & 2073 &  $p_{car}$ & 0.41 \\
 \hline
-$M_i$  & 11 & $p_6$  & 2707 & $q_1$  & 0.5 \\
+$M_i$  & 11 & $p_6$  & 2707 &  $\hat{p}$ & 0.000124 \\
 \hline
-$s_i$ & 5 & $c_1$ & \pounds 4000 & $q_2$ & 0.3 \\
+$s_i$ & 5 & L & 25,000 & $q_1$ & 0.5 \\
 \hline
-$S_i$ & 6 & $c_2$ &  \pounds 500 & $q_3$ & 0.2 \\
+$S_i$ & 6 & $c_1$ & \pounds 4000 & $q_2$ & 0.3 \\
 \hline
-$h_{ij}$ & 21.55 min & $c_{car}$ & \pounds 0.1 & $d_1$ & 1 \\
+$h_{ij}$ & 21.55 min & $c_2$ & \pounds 500 & $q_3$ & 0.2 \\
 \hline
-$p_{1}$ & 2 & $c_{total}$ & \pounds 86,538,603 & $d_2$ & 0.9 \\
+$p_{1}$ & 2 & $c_{car}$ & \pounds 0.1 & $d_1$ & 1 \\
 \hline
-$p_{2}$ & 2124 & $c_{max}$ & \pounds 3,750,000 & $d_3$ & 0.8 \\
+$p_{2}$ & 2124 & $c_{total}$ & \pounds 86,538,603 & $d_2$ & 0.9 \\
 \hline
-$p_{3}$ & 55 & $p'$ & 0.83 &      &     \\
+$p_{3}$ & 55 & $c_{max}$ &  \pounds 3,750,000 &   $d_3$   & 0.8    \\
 \hline
 \end{tabular}
 \end{table}
-\\
 $T,\ s_i, \ p', \ \hat{p}, \ q_t, \ d_t$ were chosen arbitrarily, while n was assumed to be an ideal number in order to create all the potential locations for a new station in close proximity with each other. \\
 $h_{ij}$ was estimated to be the average of the historic data in any case. The values for the rest of the parameters were taken from outside sources in order to make the model as neat as possible.
 \end{document}
