@@ -1,6 +1,7 @@
 import xpress as xp
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from building_counts import a 
 # xp.init('C:/xpressmp//bin/xpauth.xpr')
 
@@ -30,22 +31,11 @@ manufacture_cost = [500, 4000]
 user_cost = 0.1
 car_users = 0.41
 budget = 3750000
+
 # average trip time
 h = 21.55
-# dock maximums
-#M = [1,2,3,4,5,6,7,8,9,10]
 # Building weighting
 p = [2,2124,55,4602, 2073,2707]
-# residential = 2
-# commercial =(population + number of tourists/4)/number of commercial
-# (530,680 + 2,560,000/4)/ 551 = 2124 
-# school = (number of 16-18 + admin staff)/number of schools
-# 6679 + 3669/ 188 = 55 
-# university = 128,869/28 = 4602
-# hospital = vistor numbers/ number of hospitals
-# 530,680/ 8 / 2 / 16 = 2073
-# library = total library memberships / number of libraries
-# library = 530,680/4 /49 = 2707
 
 # environmental proportion
 ep = 0.000124
@@ -82,8 +72,6 @@ for i_station, i_cluster in station_to_cluster.items():
         j_orig = station_index_in_matrix[j_station]
         cluster_m[i_idx, j_idx] = m[i_orig, j_orig]
         
-# cluster_m[cluster_m==0] = m[cluster_m==0]
-
 m = cluster_m
 
 
@@ -117,25 +105,18 @@ total_trips = m.sum()
 # Total cost
 total_cost = (manufacture_cost[0]*xp.Sum(y[i] for i in clusters) + manufacture_cost[1]*xp.Sum(z[i] for i in clusters))
 
-
-
 #environmental value
-# environmental_value = car_users*user_cost*xp.Sum((trips_from_i[i]*h*x[i]) for i in clusters)
 environmental_value_total = 0
-#possible fix for environmental comparison. constraint thoughts below
 for i in clusters:
    environmental_value_i = car_users * user_cost * trips_from_i[i] * h * x[i]
    environmental_value_total += environmental_value_i
-#proportional environmental values with respect to cost
-#for i in clusters:
-#    environmental_value_i = car_users * trips_from_i[i] * h * fuel_cost * x[i]
 
 # Minimum coverage cts
 building_totals = {}
 for i in clusters:
     building_totals[i] = sum(a(i, building_type_names[k]) for k in building_types)
 
-min_coverage = xp.Sum(x[i] * building_totals[i] for i in clusters)
+coverage = xp.Sum(x[i] * building_totals[i] for i in clusters)
 
 # periodic costs cts
 period_costs = {t: 0 for t in periods}
@@ -151,10 +132,17 @@ demand_share = {i: 0.5*(bikes_from_i[i] + bikes_to_j[i])/ total_trips
 # Constraints
 
 # demand cts
+demand_cts = {}
 for i in clusters:
     for t in periods:
         # if station during t at i, then enough bikes to cover demand
-        prob.addConstraint(y_t_i[i, t] >= min(max(0, trips_from_i[i] - trips_to_j[i]), M*6) * x_t_i[i, t])
+        max_bikes = M*6
+        demand = max(0, trips_from_i[i] - trips_to_j[i])
+        demand_cap = min(min(demand, max_bikes), M*6)
+        d = xp.constraint(y_t_i[i, t] >=  demand_cap*x_t_i[i, t])
+        prob.addConstraint(d)
+        demand_cts[(i,t)] = d
+        
         # bike cts
         # open stations have at most 5 bikes per hangar for parking and accounting for unexpected surge in arrivals
         prob.addConstraint([y_t_i[i, t] <= 5*z_t_i[i, t]])
@@ -167,31 +155,28 @@ for i in clusters:
         prob.addConstraint([y_t_i[i, t] >= 5*x_t_i[i, t]])
     
 # total cost constraint
-prob.addConstraint(total_cost <= budget)
+cost_cts = xp.constraint(total_cost <= budget)
+prob.addConstraint(cost_cts)
 # period cost constrain (which should also inherently enforce the total cost constraint but may as well keep both, no?)
+periodic_cost_cts = {}
 for t in periods:
-    prob.addConstraint(period_costs[t] <= budget * periodic_pct_budget[t])
+    c = xp.constraint(period_costs[t] <= budget * periodic_pct_budget[t])
+    prob.addConstraint(c)
+    periodic_cost_cts[t] = c
+    
 # environmental constraint
-# prob.addConstraint(environmental_value >= ep*fuel_cost)
-prob.addConstraint(environmental_value_total >= ep*fuel_cost)
-#prob.addConstraint(environmental_value_i >= ep * fuel_cost * x[i]) proportional to cost
+environmental_cts = xp.constraint(environmental_value_total >= ep*fuel_cost)
+prob.addConstraint(environmental_cts)
+
 for i in clusters:
     prob.addConstraint(x[i] <= 1)
-# Budget limit exception
-# prob.addConstraint(total_cost <= l[1]*social_value + l[2]*environmental_value)
 
 # Minimum coverage
 # approximately 75% coverage of POIs
-prob.addConstraint(min_coverage >= 25000)
+coverage_cts = xp.constraint(coverage >= 25000)
+prob.addConstraint(coverage_cts)
+
 #%%
-# cluster_weight = {}
-# for i in clusters:
-#     cluster_weight[i] = sum(
-#         (p[k] * a(i, k))
-#         for k in building_types
-#     )
-
-
 # I think this will fix our objective function 
 cluster_weight = {}
 for i in clusters:
@@ -201,21 +186,76 @@ for i in clusters:
         (p[k] * a(i, building_type_names[k]))
         for k in building_types
     )
-    # # this meant that down below, xp.Sum(cluster_weight[i]*(bikes_from_i[i] + bikes_to_j[i])*y[i] 
-    #                                                                     for i in clusters)
-    #                                                                     = 0*(mij + mji)*yi = 0 for all i in clusters
 
 # Objective function
 social_value = xp.Sum(degradation_factors[t]*cluster_weight[i]*(bikes_from_i[i] + bikes_to_j[i])*y_t_i[i, t] 
                                                                         for i in clusters for t in periods)
 
-
 prob.setObjective(social_value, sense=xp.maximize)
 
 prob.write("periodic_bikes","lp")
+
+######################Sensitivity analysis ##############################
+############Budget#######################
+budget = [1750000, 2250000, 2750000, 3250000, 3750000, 4250000, 4750000, 5250000, 5750000, 6250000, 
+          6750000, 7250000, 7750000, 8250000]
+budget_results = []
+
+for b in budget:
+    cost_cts.rhs = b
+    for t in periods:
+        periodic_cost_cts[t].rhs = b * periodic_pct_budget[t]
+    xp.setOutputEnabled(False)
+    prob.solve()
+    social_value = prob.attributes.objval
+    coverage_val = prob.getSolution(coverage)
+    
+    coverage_per_period = {
+    t: sum(building_totals[i] * x_t_i[i,t].getSolution() for i in clusters)
+    for t in periods
+    }
+    
+    budget_results.append({
+        "budget": b,
+        "objective": social_value,
+        "coverage": coverage_val,
+        "deployment": coverage_per_period
+    })
+
+########################Demand#######################
+# demand_variance = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
+# demand_results = []
+# for variance in demand_variance:
+#     for i in clusters:
+#         for t in periods:
+#             max_bikes = M*6
+#             base_demand = max(0, trips_from_i[i] - trips_to_j[i])
+#             demand_cap = min(base_demand, max_bikes)
+#             demand_cts[(i,t)].rhs = demand_cap * variance * x_t_i[i,t]
+            
+#     xp.setOutputEnabled(False)
+#     prob.solve()
+#     social_value = prob.attributes.objval
+#     coverage_val = prob.getSolution(coverage)
+        
+#     coverage_per_period = {
+#     t: sum(building_totals[i] * x_t_i[i,t].getSolution() for i in clusters)
+#     for t in periods
+#     }
+        
+#     demand_results.append({
+#         "variance": variance,
+#         "objective": social_value,
+#         "coverage": coverage_val,
+#         "deployment": coverage_per_period
+#     })
+######################Sensitivity analysis##############################
+
 #%%
-xp.setOutputEnabled(True)
-prob.solve()
+# xp.setOutputEnabled(True)
+# prob.solve()
+
+#%%
 # initialize list of cluster-wise results
 row_results = []
 for i in clusters:
@@ -235,23 +275,92 @@ results_frame.to_csv('periodic_results_by_cluster.csv', index=False)
 for t in periods:
     for i in clusters:
         if y_t_i[i, t].getSolution() > 0:
-            print(t, i, y_t_i[i, t].getSolution())
+            print(f'Number of bikes in period {t} at cluster {i}: {round(y_t_i[i, t].getSolution())}')
         
 print("")
         
 for t in periods:
     for i in clusters:
         if z_t_i[i, t].getSolution() > 0:
-            print(t, i, z_t_i[i, t].getSolution())
+            print(f'In period {t} at cluster {i} the number of hangars constructed was: {round(z_t_i[i, t].getSolution())}')
 print("")    
-# for i in clusters:
-#     print(f"Cluster {i:3d} | Weight = {cluster_weight[i]*1000:.20f}")
 
 for t in periods:
-    print(prob.getSolution(period_costs[t]))    
-print(prob.getSolution(total_cost))
+    print(f'The cost of operations in period {t} was: £{round(prob.getSolution(period_costs[t]))}')    
+print(" ")
+print(f'The total cost for the project was: £{round(prob.getSolution(total_cost))}')
 
-# for i in clusters:
-#     if environmental_value_i[i]
+print("")
 
-# print("Total trips:", total_trips)
+total_stations = sum(prob.getSolution(x[i]) for i in clusters)
+print('The total number of stations built was: ', total_stations)
+total_buildings = sum(building_totals.values())
+print(f'The total number of buildings is {total_buildings}')
+print('The total coverage is:', prob.getSolution(coverage))
+
+print("")
+
+#%%
+######################Sensitivity analysis ##############################
+############Budget#######################
+budget_frame = pd.DataFrame([
+    {
+        "budget": r["budget"],
+        "objective": r["objective"],
+        "coverage": r["coverage"],
+        **{f"period_{t}": r["deployment"][t] for t in periods}
+    }
+    for r in budget_results
+])
+plt.figure(figsize=(8,6))
+
+for t in range(3):
+    plt.plot(budget_frame["budget"], budget_frame[f"period_{t}"], label=f"Period {t}")
+
+plt.plot(
+    budget_frame["budget"],
+    budget_frame["coverage"],
+    marker='D',
+    linestyle='--',
+    linewidth=2,
+    label="Total Coverage"
+)
+
+plt.xlabel("Budget")
+plt.ylabel("Coverage")
+plt.title("Coverage vs Budget")
+plt.legend()
+plt.grid(True)
+plt.savefig('budget_vs_periodic_coverage.png', dpi=300, bbox_inches='tight' )
+plt.show()
+
+###################Demand########################
+# demand_frame = pd.DataFrame([
+#     {
+#         "variance": r["variance"],
+#         "objective": r["objective"],
+#         "coverage": r["coverage"],
+#         **{f'period_{t}': r["deployment"][t] for t in periods}    
+#     }
+#     for r in demand_results
+# ])
+# plt.figure(figsize=(8,6))
+
+# for t in range(3):
+#     plt.plot(demand_frame["variance"], demand_frame[f'period_{t}'], label=f'Period {t}')
+
+# plt.plot(
+#     demand_frame["variance"],
+#     demand_frame["coverage"],
+#     marker='D',
+#     linestyle='--',
+#     linewidth=2,
+#     label="Total Coverage"
+# )
+
+# plt.xlabel('Demand Variance')
+# plt.ylabel('Coverage')
+# plt.title('Demand Variances vs Coverage')
+# plt.legend()
+# plt.grid(True)
+# plt.show()
