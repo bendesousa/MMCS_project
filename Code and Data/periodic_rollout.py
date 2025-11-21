@@ -30,7 +30,7 @@ manufacture_cost = [500, 4000]
 # numbers found through extensive research
 user_cost = 0.1
 car_users = 0.41
-budget = 3750000
+budget = 9000000
 
 # average trip time
 h = 21.55
@@ -173,7 +173,8 @@ for i in clusters:
 
 # Minimum coverage
 # approximately 75% coverage of POIs
-coverage_cts = xp.constraint(coverage >= 25000)
+min_coverage = 25000
+coverage_cts = xp.constraint(coverage >= min_coverage)
 prob.addConstraint(coverage_cts)
 
 #%%
@@ -197,58 +198,62 @@ prob.write("periodic_bikes","lp")
 
 ######################Sensitivity analysis ##############################
 ############Budget#######################
-budget = [1750000, 2250000, 2750000, 3250000, 3750000, 4250000, 4750000, 5250000, 5750000, 6250000, 
-          6750000, 7250000, 7750000, 8250000]
-budget_results = []
+# budget = [1750000, 2250000, 2750000, 3250000, 3750000, 4250000, 4750000, 5250000, 5750000, 6250000, 
+#           6750000, 7250000, 7750000, 8250000]
+# budget_results = []
 
-for b in budget:
-    cost_cts.rhs = b
-    for t in periods:
-        periodic_cost_cts[t].rhs = b * periodic_pct_budget[t]
-    xp.setOutputEnabled(False)
-    prob.solve()
-    social_value = prob.attributes.objval
-    coverage_val = prob.getSolution(coverage)
-    
-    coverage_per_period = {
-    t: sum(building_totals[i] * x_t_i[i,t].getSolution() for i in clusters)
-    for t in periods
-    }
-    
-    budget_results.append({
-        "budget": b,
-        "objective": social_value,
-        "coverage": coverage_val,
-        "deployment": coverage_per_period
-    })
-
-########################Demand#######################
-# demand_variance = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
-# demand_results = []
-# for variance in demand_variance:
-#     for i in clusters:
-#         for t in periods:
-#             max_bikes = M*6
-#             base_demand = max(0, trips_from_i[i] - trips_to_j[i])
-#             demand_cap = min(base_demand, max_bikes)
-#             demand_cts[(i,t)].rhs = demand_cap * variance * x_t_i[i,t]
-            
+# for b in budget:
+#     cost_cts.rhs = b
+#     for t in periods:
+#         periodic_cost_cts[t].rhs = b * periodic_pct_budget[t]
 #     xp.setOutputEnabled(False)
 #     prob.solve()
 #     social_value = prob.attributes.objval
 #     coverage_val = prob.getSolution(coverage)
-        
+    
 #     coverage_per_period = {
 #     t: sum(building_totals[i] * x_t_i[i,t].getSolution() for i in clusters)
 #     for t in periods
 #     }
-        
-#     demand_results.append({
-#         "variance": variance,
+    
+#     budget_results.append({
+#         "budget": b,
 #         "objective": social_value,
 #         "coverage": coverage_val,
 #         "deployment": coverage_per_period
 #     })
+
+########################Demand#######################
+min_coverage = [0, 10000, 15000, 20000, 25000, 30000,]
+coverage_results = []
+for c in min_coverage:
+    coverage_cts.rhs = c
+    xp.setOutputEnabled(False)
+    prob.solve()    
+    stations = sum((sum(x_t_i[i, t].getSolution() for t in periods) 
+                   for i in clusters))
+    bikes = sum((y_t_i[i, t].getSolution())
+                for i in clusters for t in periods)
+    hangars = sum((z_t_i[i, t].getSolution())
+                  for i in clusters for t in periods)
+    
+    social_value = prob.attributes.objval
+        
+    coverage_val = sum(
+        building_totals[i] 
+        for i in clusters 
+        if any(x_t_i[i, t].getSolution() > 0.5 for t in periods)
+    )
+        
+    coverage_results.append({
+        "min_coverage": c,
+        "objective": social_value,
+        "coverage": coverage_val,
+        "stations": stations,
+        "bikes": bikes,
+        "hangars": hangars
+        # "deployment": coverage_per_period
+    })
 ######################Sensitivity analysis##############################
 
 #%%
@@ -303,64 +308,86 @@ print("")
 #%%
 ######################Sensitivity analysis ##############################
 ############Budget#######################
-budget_frame = pd.DataFrame([
-    {
-        "budget": r["budget"],
-        "objective": r["objective"],
-        "coverage": r["coverage"],
-        **{f"period_{t}": r["deployment"][t] for t in periods}
-    }
-    for r in budget_results
-])
-plt.figure(figsize=(8,6))
-
-for t in range(3):
-    plt.plot(budget_frame["budget"], budget_frame[f"period_{t}"], label=f"Period {t}")
-
-plt.plot(
-    budget_frame["budget"],
-    budget_frame["coverage"],
-    marker='D',
-    linestyle='--',
-    linewidth=2,
-    label="Total Coverage"
-)
-
-plt.xlabel("Budget")
-plt.ylabel("Coverage")
-plt.title("Coverage vs Budget")
-plt.legend()
-plt.grid(True)
-plt.savefig('budget_vs_periodic_coverage.png', dpi=300, bbox_inches='tight' )
-plt.show()
-
-###################Demand########################
-# demand_frame = pd.DataFrame([
+# budget_frame = pd.DataFrame([
 #     {
-#         "variance": r["variance"],
+#         "budget": r["budget"],
 #         "objective": r["objective"],
 #         "coverage": r["coverage"],
-#         **{f'period_{t}': r["deployment"][t] for t in periods}    
+#         **{f"period_{t}": r["deployment"][t] for t in periods}
 #     }
-#     for r in demand_results
+#     for r in budget_results
 # ])
 # plt.figure(figsize=(8,6))
 
 # for t in range(3):
-#     plt.plot(demand_frame["variance"], demand_frame[f'period_{t}'], label=f'Period {t}')
+#     plt.plot(budget_frame["budget"], budget_frame[f"period_{t}"], label=f"Period {t}")
 
 # plt.plot(
-#     demand_frame["variance"],
-#     demand_frame["coverage"],
+#     budget_frame["budget"],
+#     budget_frame["coverage"],
 #     marker='D',
 #     linestyle='--',
 #     linewidth=2,
 #     label="Total Coverage"
 # )
 
-# plt.xlabel('Demand Variance')
-# plt.ylabel('Coverage')
-# plt.title('Demand Variances vs Coverage')
+# plt.xlabel("Budget")
+# plt.ylabel("Coverage")
+# plt.title("Coverage vs Budget")
 # plt.legend()
 # plt.grid(True)
+
+# plt.savefig('budget_vs_periodic_coverage.png', dpi=300, bbox_inches='tight' )
 # plt.show()
+
+###################Demand########################
+coverage_frame = pd.DataFrame([
+    {
+        "min_coverage": r["min_coverage"],
+        "objective": r["objective"],
+        "coverage": r["coverage"],
+        "stations": r["stations"],
+        "bikes": r["bikes"],
+        "hangars": r["hangars"]
+        # **{f'period_{t}': r["deployment"][t] for t in periods}    
+    }
+    for r in coverage_results
+])
+
+plt.figure(figsize=(8,6))
+plt.plot(coverage_frame["min_coverage"], coverage_frame["stations"], marker='o', label="Stations")
+plt.plot(coverage_frame["min_coverage"], coverage_frame["bikes"], marker='s', label="Bikes")
+plt.plot(coverage_frame["min_coverage"], coverage_frame["hangars"], marker='^', label="Hangars")
+
+plt.xlabel("Minimum Coverage")
+plt.ylabel("Count")
+plt.title("Stations, Bikes, and Hangars vs Minimum Coverage")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.savefig('stations,bikes,hangars_vs_min_coverage.png', dpi=300, bbox_inches='tight' )
+plt.show()
+
+plt.figure(figsize=(8,6))
+plt.plot(coverage_frame["min_coverage"], coverage_frame["coverage"], marker='D', linestyle='--', color='purple', label="Total Coverage")
+
+plt.xlabel("Minimum Coverage")
+plt.ylabel("Total Coverage")
+plt.title("Total Coverage vs Minimum Coverage")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.savefig('total_coverage_vs_min_coverage.png', dpi=300, bbox_inches='tight' )
+plt.show()
+
+plt.figure(figsize=(8,6))
+plt.plot(coverage_frame["min_coverage"], coverage_frame["objective"], marker='x', linestyle='-', color='green', label="Objective Value")
+
+plt.xlabel("Minimum Coverage")
+plt.ylabel("Objective Value")
+plt.title("Objective Value vs Minimum Coverage")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.savefig('objective_vs_min_coverage.png', dpi=300, bbox_inches='tight' )
+plt.show()
