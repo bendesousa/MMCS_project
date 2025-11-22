@@ -10,16 +10,29 @@ def period_prob(previous_results, period, m = np.load('m_matrix.npy')):
 	
 	prob = xp.problem(name='periodic_bikes')
 
+	if "cluster" not in previous_results.columns:
+		raise ValueError("previous_results must include a 'cluster' column.")
+
+	prev = previous_results.copy()
+	prev = prev.sort_values("cluster").reset_index(drop=True)   # deterministic row order
+	prev = prev.set_index("cluster")
+
+	# check our periods are working right
+	if period < 0:
+		raise ValueError("period must be >= 0")
+	number_of_periods = period + 1
+	periods = range(number_of_periods)
+
 	# Defining the index sets
 	number_of_clusters = 250
 	number_of_transport_types = 2
 	number_of_building_types = 6
-	number_of_periods = 3
+
 
 	clusters = range(number_of_clusters)
 	transport_types = range(number_of_transport_types)
 	building_types = range(number_of_building_types)
-	periods = range(number_of_periods)
+
 
 	transport_names = ['Bicycle', 'Car']
 	building_type_names = ['residential', 'commercial', 'school', 
@@ -61,6 +74,7 @@ def period_prob(previous_results, period, m = np.load('m_matrix.npy')):
 	degradation_factors = [1, .9, .8]
 	# periodic % budget available
 	periodic_pct_budget = [0.5, 0.3, 0.2]
+	periodic_pct_sec_obj = [0, 0, 1]
 	#Max hangars for a station
 	M = 11
 
@@ -95,12 +109,12 @@ def period_prob(previous_results, period, m = np.load('m_matrix.npy')):
 	total_cost = (manufacture_cost[0]*xp.Sum(y[i] for i in clusters) + manufacture_cost[1]*xp.Sum(z[i] for i in clusters))
 
 	#environmental value
-	# environmental_value = car_users*user_cost*xp.Sum((trips_from_i[i]*h*x[i]) for i in clusters)
-	environmental_value_total = 0
-	#possible fix for environmental comparison. constraint thoughts below
-	for i in clusters:
-		environmental_value_i = car_users * user_cost * trips_from_i[i] * h * x[i]
-		environmental_value_total += environmental_value_i
+	environmental_value_total = xp.Sum((car_users*user_cost*trips_from_i[i]*h*x[i]) for i in clusters)
+	# environmental_value_total = 0
+	# #possible fix for environmental comparison. constraint thoughts below
+	# for i in clusters:
+	# 	environmental_value_i = car_users * user_cost * trips_from_i[i] * h * x[i]
+	# 	environmental_value_total += environmental_value_i
 	#proportional environmental values with respect to cost
 	#for i in clusters:
 	#    environmental_value_i = car_users * trips_from_i[i] * h * fuel_cost * x[i]
@@ -113,10 +127,7 @@ def period_prob(previous_results, period, m = np.load('m_matrix.npy')):
 	min_coverage = xp.Sum(x[i] * building_totals[i] for i in clusters)
 
 	# periodic costs cts
-	period_costs = {t: 0 for t in periods}
-	for i in clusters:
-		for t in periods:
-			period_costs[t] += (manufacture_cost[0]*xp.Sum(y_t_i[i, t]) + manufacture_cost[1]*xp.Sum(z_t_i[i, t]))
+	period_costs = {t: (manufacture_cost[0]*xp.Sum(y_t_i[i, t] for i in clusters) + manufacture_cost[1]*xp.Sum(z_t_i[i, t] for i in clusters)) for t in periods}
 
 	# Proportion of demand for a station at cluster i
 	demand_share = {i: 0.5*(bikes_from_i[i] + bikes_to_j[i])/ total_trips
@@ -128,22 +139,40 @@ def period_prob(previous_results, period, m = np.load('m_matrix.npy')):
 	# demand cts
 	for i in clusters:
 		for t in periods:
-			# if station during t at i, then enough bikes to cover demand
-			prob.addConstraint(y_t_i[i, t] >= min(max(0, trips_from_i[i] - trips_to_j[i]), M*6) * x_t_i[i, t])
-			# bike cts
-			# open stations have at most 5 bikes per hangar for parking and accounting for unexpected surge in arrivals
-			prob.addConstraint([y_t_i[i, t] <= 5*z_t_i[i, t]])
-			# station cts
-			# open stations have at least one hangar and no more than 11 hangars according to historic system's station capacities
-			prob.addConstraint([z_t_i[i, t] >= x_t_i[i, t]])
-			prob.addConstraint([z_t_i[i, t] <= M*x_t_i[i, t]])
+			if t == period:
+				# if station during t at i, then enough bikes to cover demand
+				prob.addConstraint(y_t_i[i, t] >= min(max(0, trips_from_i[i] - trips_to_j[i]), M*6) * x_t_i[i, t])
+				# bike cts
+				# open stations have at most 5 bikes per hangar for parking and accounting for unexpected surge in arrivals
+				prob.addConstraint([y_t_i[i, t] <= 5*z_t_i[i, t]])
+				# station cts
+				# open stations have at least one hangar and no more than 11 hangars according to historic system's station capacities
+				prob.addConstraint([z_t_i[i, t] >= x_t_i[i, t]])
+				prob.addConstraint([z_t_i[i, t] <= M*x_t_i[i, t]])
 
-			# Ensuring stations open with at least 5 bikes
-			prob.addConstraint([y_t_i[i, t] >= 5*x_t_i[i, t]])
+				# Ensuring stations open with at least 5 bikes
+				prob.addConstraint([y_t_i[i, t] >= 5*x_t_i[i, t]])
 
-			# ensuring previous decisions hold
-			# prob.addConstraint([x_t_i[i, t] >= previous_results.loc[i, f'opened during {t}']])
-			# prob.addConstraint([y_t_i[i, t] >= previous_results.loc[i, f'bikes added during {t}']])
+		# for t in periods:
+			if t < period:
+
+				prev_open_col = f"opened during {t}"
+				prev_bikes_col = f"bikes added during {t}"
+				prev_hangars_col = f"hangars added during {t}"
+
+				if prev_open_col in prev.columns:
+					val = int(prev.at[i, prev_open_col]) if not pd.isna(prev.at[i, prev_open_col]) else 0
+					# if previous result says station already opened at this cluster-period,
+					# this model must have x_t_i >= that previous value
+					prob.addConstraint(x_t_i[i, t] == val)
+
+				if prev_bikes_col in prev.columns:
+					val = int(prev.at[i, prev_bikes_col]) if not pd.isna(prev.at[i, prev_bikes_col]) else 0
+					prob.addConstraint(y_t_i[i, t] == val)
+
+				if prev_hangars_col in prev.columns:
+					val = int(prev.at[i, prev_hangars_col]) if not pd.isna(prev.at[i, prev_hangars_col]) else 0
+					prob.addConstraint(z_t_i[i, t] == val)
 		
 	# total cost constraint
 	prob.addConstraint(total_cost <= budget)
@@ -152,7 +181,10 @@ def period_prob(previous_results, period, m = np.load('m_matrix.npy')):
 		prob.addConstraint(period_costs[t] <= budget * periodic_pct_budget[t])
 	# environmental constraint
 	# prob.addConstraint(environmental_value >= ep*fuel_cost)
-	prob.addConstraint(environmental_value_total >= ep*fuel_cost)
+	enviro_rhs = 0
+	for t in periods:
+		enviro_rhs += ep*fuel_cost*periodic_pct_sec_obj[t]
+	prob.addConstraint(environmental_value_total >= enviro_rhs)
 	#prob.addConstraint(environmental_value_i >= ep * fuel_cost * x[i]) proportional to cost
 	for i in clusters:
 		prob.addConstraint(x[i] <= 1)
@@ -161,7 +193,10 @@ def period_prob(previous_results, period, m = np.load('m_matrix.npy')):
 
 	# Minimum coverage
 	# approximately 75% coverage of POIs
-	prob.addConstraint(min_coverage >= 25000)
+	coverage_t_rhs = 0
+	for t in periods:
+		coverage_t_rhs += 25000 * periodic_pct_sec_obj[t]
+	prob.addConstraint(min_coverage >= coverage_t_rhs)
 	#%%
 	# I think this will fix our objective function 
 	cluster_weight = {}
@@ -229,7 +264,8 @@ def update_m(previous_results, m=None):
 
 		# Rule 1: both open
 		num = y_cumsum[:, t-1][:,None] + y_cumsum[:, t-1][None,:]
-		den = y_cumsum[:, t-2][:,None] + y_cumsum[:, t-2][None,:]
+		# den = y_cumsum[:, t-2][:,None] + y_cumsum[:, t-2][None,:] can be zero
+		den = 10 # if min bikes, mu = M_prev, mu = sum_bikes * M_prev/10 (hopefully just to get something working)
 		mu = (num / den) * M_prev
 		samples = np.random.normal(mu[both_open], 4)
 		samples = np.maximum(samples, 0)        # clamp negatives to 0
@@ -300,6 +336,7 @@ def unpack_previous_results(previous_results):
 previous_results = pd.DataFrame(np.zeros((250, 3), dtype = int), columns=["opened during 0", "bikes added during 0", "hangars added during 0"])
 original_scheme = pd.DataFrame(np.zeros((250, 3), dtype = int), columns=["opened during -1", "bikes added during -1", "hangars added during -1"])
 original_scheme.insert(0, "cluster", np.arange(250))
+previous_results.insert(0, "cluster", np.arange(250))
 
 station_assignments = pd.read_csv('stations_assigned.csv')
 assigned_stations = station_assignments[station_assignments['assigned_cluster'] != -1]
