@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from building_counts import a 
-# xp.init('C:/xpressmp//bin/xpauth.xpr')
+xp.init('C:/xpressmp//bin/xpauth.xpr')
 
 #%%
 prob = xp.problem(name='periodic_bikes')
@@ -30,7 +30,7 @@ manufacture_cost = [500, 4000]
 # numbers found through extensive research
 user_cost = 0.1
 car_users = 0.41
-budget = 9000000
+budget = 3750000
 
 # average trip time
 h = 21.55
@@ -223,42 +223,42 @@ prob.write("periodic_bikes","lp")
 #         "deployment": coverage_per_period
 #     })
 
-########################Demand#######################
-min_coverage = [0, 10000, 15000, 20000, 25000, 30000,]
-coverage_results = []
-for c in min_coverage:
-    coverage_cts.rhs = c
-    xp.setOutputEnabled(False)
-    prob.solve()    
-    stations = sum((sum(x_t_i[i, t].getSolution() for t in periods) 
-                   for i in clusters))
-    bikes = sum((y_t_i[i, t].getSolution())
-                for i in clusters for t in periods)
-    hangars = sum((z_t_i[i, t].getSolution())
-                  for i in clusters for t in periods)
+########################Minimum Coverage#######################
+# min_coverage = [0, 10000, 15000, 20000, 25000, 30000,]
+# coverage_results = []
+# for c in min_coverage:
+#     coverage_cts.rhs = c
+#     xp.setOutputEnabled(False)
+#     prob.solve()    
+#     stations = sum((sum(x_t_i[i, t].getSolution() for t in periods) 
+#                    for i in clusters))
+#     bikes = sum((y_t_i[i, t].getSolution())
+#                 for i in clusters for t in periods)
+#     hangars = sum((z_t_i[i, t].getSolution())
+#                   for i in clusters for t in periods)
     
-    social_value = prob.attributes.objval
+#     social_value = prob.attributes.objval
         
-    coverage_val = sum(
-        building_totals[i] 
-        for i in clusters 
-        if any(x_t_i[i, t].getSolution() > 0.5 for t in periods)
-    )
+#     coverage_val = sum(
+#         building_totals[i] 
+#         for i in clusters 
+#         if any(x_t_i[i, t].getSolution() > 0.5 for t in periods)
+#     )
         
-    coverage_results.append({
-        "min_coverage": c,
-        "objective": social_value,
-        "coverage": coverage_val,
-        "stations": stations,
-        "bikes": bikes,
-        "hangars": hangars
-        # "deployment": coverage_per_period
-    })
+#     coverage_results.append({
+#         "min_coverage": c,
+#         "objective": social_value,
+#         "coverage": coverage_val,
+#         "stations": stations,
+#         "bikes": bikes,
+#         "hangars": hangars
+#         # "deployment": coverage_per_period
+#     })
 ######################Sensitivity analysis##############################
 
 #%%
-# xp.setOutputEnabled(True)
-# prob.solve()
+xp.setOutputEnabled(True)
+prob.solve()
 
 #%%
 # initialize list of cluster-wise results
@@ -337,57 +337,58 @@ print("")
 # plt.legend()
 # plt.grid(True)
 
-# plt.savefig('budget_vs_periodic_coverage.png', dpi=300, bbox_inches='tight' )
+# # plt.savefig('budget_vs_periodic_coverage.png', dpi=300, bbox_inches='tight' )
+# # plt.savefig('budget_vs_relaxed_periodic_coverage.png', dpi=300, bbox_inches='tight' )
 # plt.show()
 
-###################Demand########################
-coverage_frame = pd.DataFrame([
-    {
-        "min_coverage": r["min_coverage"],
-        "objective": r["objective"],
-        "coverage": r["coverage"],
-        "stations": r["stations"],
-        "bikes": r["bikes"],
-        "hangars": r["hangars"]
-        # **{f'period_{t}': r["deployment"][t] for t in periods}    
-    }
-    for r in coverage_results
-])
+###################Minimum Coverage########################
+# coverage_frame = pd.DataFrame([
+#     {
+#         "min_coverage": r["min_coverage"],
+#         "objective": r["objective"],
+#         "coverage": r["coverage"],
+#         "stations": r["stations"],
+#         "bikes": r["bikes"],
+#         "hangars": r["hangars"]
+#     }
+#     for r in coverage_results
+# ])
 
-plt.figure(figsize=(8,6))
-plt.plot(coverage_frame["min_coverage"], coverage_frame["stations"], marker='o', label="Stations")
-plt.plot(coverage_frame["min_coverage"], coverage_frame["bikes"], marker='s', label="Bikes")
-plt.plot(coverage_frame["min_coverage"], coverage_frame["hangars"], marker='^', label="Hangars")
+# plt.figure(figsize=(8,6))
+# plt.plot(coverage_frame["min_coverage"], coverage_frame["stations"], marker='o', label="Stations")
+# plt.plot(coverage_frame["min_coverage"], coverage_frame["bikes"], marker='s', label="Bikes")
+# plt.plot(coverage_frame["min_coverage"], coverage_frame["hangars"], marker='^', label="Hangars")
 
-plt.xlabel("Minimum Coverage")
-plt.ylabel("Count")
-plt.title("Stations, Bikes, and Hangars vs Minimum Coverage")
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.savefig('stations,bikes,hangars_vs_min_coverage.png', dpi=300, bbox_inches='tight' )
-plt.show()
+# plt.xlabel("Minimum Coverage")
+# plt.ylabel("Count")
+# plt.title("Stations, Bikes, and Hangars vs Minimum Coverage")
+# plt.legend()
+# plt.grid(True)
+# plt.tight_layout()
+# # plt.savefig('stations,bikes,hangars_vs_min_coverage.png', dpi=300, bbox_inches='tight' )
+# # plt.savefig('stations,bikes,hangars_vs_min_coverage(relaxed).png', dpi=300, bbox_inches='tight' )
+# plt.show()
 
-plt.figure(figsize=(8,6))
-plt.plot(coverage_frame["min_coverage"], coverage_frame["coverage"], marker='D', linestyle='--', color='purple', label="Total Coverage")
+# plt.figure(figsize=(8,6))
+# plt.plot(coverage_frame["min_coverage"], coverage_frame["coverage"], marker='D', linestyle='--', color='purple', label="Total Coverage")
+# plt.xlabel("Minimum Coverage")
+# plt.ylabel("Total Coverage")
+# plt.title("Total Coverage vs Minimum Coverage")
+# plt.legend()
+# plt.grid(True)
+# plt.tight_layout()
+# # plt.savefig('total_coverage_vs_min_coverage.png', dpi=300, bbox_inches='tight' )
+# # plt.savefig('total_coverage_vs_min_coverage(relaxed).png', dpi=300, bbox_inches='tight' )
+# plt.show()
 
-plt.xlabel("Minimum Coverage")
-plt.ylabel("Total Coverage")
-plt.title("Total Coverage vs Minimum Coverage")
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.savefig('total_coverage_vs_min_coverage.png', dpi=300, bbox_inches='tight' )
-plt.show()
-
-plt.figure(figsize=(8,6))
-plt.plot(coverage_frame["min_coverage"], coverage_frame["objective"], marker='x', linestyle='-', color='green', label="Objective Value")
-
-plt.xlabel("Minimum Coverage")
-plt.ylabel("Objective Value")
-plt.title("Objective Value vs Minimum Coverage")
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.savefig('objective_vs_min_coverage.png', dpi=300, bbox_inches='tight' )
-plt.show()
+# plt.figure(figsize=(8,6))
+# plt.plot(coverage_frame["min_coverage"], coverage_frame["objective"], marker='x', linestyle='-', color='green', label="Objective Value")
+# plt.xlabel("Minimum Coverage")
+# plt.ylabel("Objective Value")
+# plt.title("Objective Value vs Minimum Coverage")
+# plt.legend()
+# plt.grid(True)
+# plt.tight_layout()
+# # plt.savefig('objective_vs_min_coverage.png', dpi=300, bbox_inches='tight' )
+# # plt.savefig('objective_vs_min_coverage(relaxed).png', dpi=300, bbox_inches='tight' )
+# plt.show()
