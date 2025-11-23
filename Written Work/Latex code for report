@@ -3,6 +3,7 @@
 \usepackage{amsmath}
 \usepackage[a4paper, margin=3cm]{geometry}
 \usepackage{hyperref}
+\usepackage{float}
 
 \title{A Sustainable Electric Bicycle Scheme for Edinburgh}
 \author{Benjamin de Sousa, Alexandros Zachakos, Todd House & Nolan Willoughby}
@@ -219,14 +220,14 @@ The budget was a clear binding constraint even prior to running the model. As me
 In both cases raising the budget does eventually lead to an increase in total coverage before eventually plateauing. This is exactly as would be expected from the model as initially greater investment will be funnelled into the higher value stations, increasing their capacity. \\ \\
 In the constrained analysis the model will then push for maximum coverage. Period 0 reflects a general upwards trend at a low rate as this is the initial investment period with no degradation in value. Period 1 does see a slump in the mid-range budgets before beginning to climb. This is likely because whilst the budgets are below a certain threshold focus is still on increasing the capacity of the valuable stations before increasing coverage when there is not substantial excess funding. Period 2 experiences an opposite trend to Period 1, even hitting zero at the highest budgets, this is likely as the degradation factor effect on investment value can only really be avoided if it is possible to build all the stations in earlier periods. \\ \\
 In the unconstrainted model, we see a similar relationship between Period 1 and Period 2. However, period 1 experiences a fall off whilst Period 0 increases more sharply and to a higher degree. This can be explained by an examination of the total coverage where we can see that this never reaches close to the theoretical maximum based on POI coverage. Indicating that the value of the busiest and highest POI density station is such that without the model being forced to increase its coverage it determines that increasing the capacity of such stations vastly outweighs benefit of increasing the total coverage. This follows as more people will benefit in the higher population/trip density areas of the city. \\ \\
-The analysis of minimum coverage was carried out with the budget constraint enforced and relaxed. \\ \\
-\begin{figure}[h]
+The analysis of minimum coverage was carried out with the budget constraint enforced and relaxed.
+\begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{figure 3.png}
     \caption{Sensitivity Analysis of Minimum Coverage (Budget Constrained)}
     \label{fig:placeholder}
 \end{figure} 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{figure 4.png}
     \caption{Sensitivity Analysis of Minimum Coverage (Budget Unconstrained)}
@@ -331,8 +332,7 @@ Edinburgh City}, Accessed 21 November 2025.
 \href{https://uploads-ssl.webflow.com/6102564995f71c83fba14d54/637d049543d8ef05b11341e8_CoMoUK%20bike%20share%20guidance%20for%20local%20authorities%202022.pdf}{Bike share guidance for local authorities}, Accessed 21 November 2025.
 
 \bibitem{ref28}
-\href{https://democracy.edinburgh.gov.uk/documents/s82577/8.1%20-%20Roads%20and%20Infrastructure%20Investment%20-%20Capital%20Delivery%20Priorities%202025_26.pdf}{Roads and Infrastructure Investment – Capital Delivery
-Priorities for 2025/26}, Accessed 23 November 2025.
+\href{https://democracy.edinburgh.gov.uk/documents/s82577/8.1%20-%20Roads%20and%20Infrastructure%20Investment%20-%20Capital%20Delivery%20Priorities%202025_26.pdf}{Roads and Infrastructure Investment – Capital Delivery Priorities for 2025/26}, Accessed 23 November 2025.
 
 \bibitem{ref29}
 \href{https://roadandmountainbikereviews.co.uk/25-striking-cycling-statistics-in-denmark/}{25 Striking Cycling Statistics in Denmark}, Accessed 23 November 2025.
