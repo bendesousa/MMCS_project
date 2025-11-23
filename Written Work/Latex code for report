@@ -34,8 +34,8 @@
 \section*{1. INTRODUCTION}
 The city of Edinburgh is comprised of many winding and tight streets befitting its ancient origins. As such it is well serviced by a host of public transport options that help to reduce the load on its infrastructure. However, there is a lack of more personal public transport options in the city. This results in the limits to the coverage that the public transport can provide due to the nature of the city’s roads as well reducing the possible effect on traffic numbers. This report aims to provide a solution, titled “E-Bike Edinburgh,” to this problem with the reintroduction of an electric bicycle scheme that would be supported by the city council and a consortium of local employers.
 \subsection*{1.1 HISTORICAL CONTEXT}
-Edinburgh has experienced a generally consistent rise in road traffic over the past 30 years. There has been an increase of 376.9 million[2] miles of vehicle travel per year over that period. To contrast, Edinburgh’s air pollution has been steadily improving, with NO2 levels dropping by ~10µg m-3 in the period of 2007-2023[3]. However, Edinburgh has still yet to hit its 2030 net-zero target[4] and is still looking for ways to accelerate towards it. Both of these factors would be greatly aided by the reintroduction of a cycle hire scheme. \\
-This report frames the proposal as a reintroduction because Serco, a multi-sector firm, ran a cycle hire scheme in Edinburgh between 2018-2021[1]. Whilst relatively successful with 95[1] stations constructed and 423,000[1] trips serviced over the period, it eventually was closed due to financial challenges. This report hopes to justify the new scheme through the careful application of a mathematical model that accounts for the flaws of the previous scheme whilst providing clear and substantial improvements in the service provided.
+Edinburgh has experienced a generally consistent rise in road traffic over the past 30 years. There has been an increase of $376.9 \text{ million}^{\cite{ref1}}$ miles of vehicle travel per year over that period. To contrast, Edinburgh’s air pollution has been steadily improving, with NO2 levels dropping by ~10µg m-3 in the period of $2007-2023^{\cite{ref2}}$. However, Edinburgh has still yet to hit its 2030 net-zero $\text{target}^{\cite{ref3}}$ and is still looking for ways to accelerate towards it. Both of these factors would be greatly aided by the reintroduction of a cycle hire scheme. \\
+This report frames the proposal as a reintroduction because Serco, a multi-sector firm, ran a cycle hire scheme in Edinburgh between $2018-2021^{\cite{ref4}}$. Whilst relatively successful with $95^{\cite{ref4}}$ stations constructed and $423,000^{\cite{ref4}}$ trips serviced over the period, it eventually was closed due to financial challenges. This report hopes to justify the new scheme through the careful application of a mathematical model that accounts for the flaws of the previous scheme whilst providing clear and substantial improvements in the service provided.
 \subsection*{1.2 OBJECTIVES}
 The key objectives of this project will be structured within an ESG framework. This should allow for the greatest return on investment as well as the greatest benefit to the community.
 \begin{itemize}
@@ -205,7 +205,7 @@ The following estimates are based on the monthly data of the 142 stations opened
     \label{fig:myimage}
 \end{figure}
 \\
-Given in The City of Edinburgh Council budget for 2025/26 the carriageway and footways work accounts for £18.16 million or 71\% of the available $\text{funding}^{\cite{ref28}}$. The reduction of traffic driven by a successful intracity bike scheme could produce significant cost savings for the Council. Denmark ranks \#2 in happiness, 90\% bike ownership, notably, cycling accounts for 21\% of trips under 10 kilometers and 15\% of all trips in Denmark, showcasing its versatility as a mode of $\text{transport}^{\cite{ref29}}$.
+Given in The City of Edinburgh Council budget for 2025/26 the carriageway and footways work accounts for £18.16 million or 71\% of the available $\text{funding}^{\cite{ref5}}$. The reduction of traffic driven by a successful intracity bike scheme could produce significant cost savings for the Council. Denmark ranks \#2 in happiness, 90\% bike ownership, notably, cycling accounts for 21\% of trips under 10 kilometers and 15\% of all trips in Denmark, showcasing its versatility as a mode of $\text{transport}^{\cite{ref6}}$.
  If Edinburgh can capture a similar travel ratio, it could save the Council upwards of £4 million annually. Regarding the hangar’s feasibility, the city already has 200 bike hangars on streets and is interested in expanding the count. This is evidence of a successful product that users choose to pay into to increase bike security and reduce weather effects.
  \subsection*{3.1.1. Sensitivity Analysis}
  In the solving of this problem we were able to identify two major binding constraints for our model, budget and minimum coverage requirements. A sensitivity analysis was carried out on these constraints to identify possible future adjustments to the deployment of the scheme. \\ \\
@@ -250,93 +250,93 @@ E-Bike Edinburgh provides a proven system capable of reducing traffic and CO2 em
 \begin{thebibliography}{99}
 
 \bibitem{ref1}
-\href{https://www.serco.com/uk/sector-expertise/transport/cycle-hire/edinburgh-cycle-hire}{Edinburgh Cycle Hire, Edinburgh Cycle Hire, Serco},  Accessed 10 November 2025
-
-\bibitem{ref2}
 \href{https://roadtraffic.dft.gov.uk/local-authorities/S12000036}{Road traffic statistics – City of Edinburgh, Road Traffic website - City of Edinburgh, UK Government}, Accessed 10 November 2025.
 
-\bibitem{ref3}
+\bibitem{ref2}
 \href{https://www.scottishairquality.scot/data/trends}{Data Trends Summary, Trends summary, Air Quality in Scotland},  Accessed 10 November 2025.
 
-\bibitem{ref4}
+\bibitem{ref3}
 \href{https://www.edinburgh.gov.uk/climate-2/climate-target-net-zero-2030/1}{Edinburgh’s net zero target, Edinburgh's net zero target – The City of Edinburgh Council, The City of Edinburgh Council}, Accessed 10 November 2025.
 
+\bibitem{ref4}
+\href{https://www.serco.com/uk/sector-expertise/transport/cycle-hire/edinburgh-cycle-hire}{Edinburgh Cycle Hire, Edinburgh Cycle Hire, Serco},  Accessed 10 November 2025
+
 \bibitem{ref5}
-\href{https://cyclehoop.com/product/bikehangar/}{Bikehangar, Bikehangar® | Cyclehoop, Cyclehoop}, Accessed 17 November 2025.
+\href{https://democracy.edinburgh.gov.uk/documents/s82577/8.1%20-%20Roads%20and%20Infrastructure%20Investment%20-%20Capital%20Delivery%20Priorities%202025_26.pdf}{Roads and Infrastructure Investment – Capital Delivery Priorities for 2025/26}, Accessed 23 November 2025.
 
 \bibitem{ref6}
-\href{https://www.xjd.com/a-how-much-does-a-lime-bike-cost-to-make/}{How much does a lime bike cost to make, how much does a lime bike cost to make - XJD, XJD}, Accessed 17 November 2025.
+\href{https://roadandmountainbikereviews.co.uk/25-striking-cycling-statistics-in-denmark/}{25 Striking Cycling Statistics in Denmark}, Accessed 23 November 2025.
 
 \bibitem{ref7}
-\href{https://www.gov.scot/publications/summary-statistics-for-schools-in-scotland-2024/pages/school-teachers/}{Summary statistics for schools in Scotland 2024, School teachers - Summary statistics for schools in Scotland 2024 - gov.scot, Scottish Government},  Accessed 17 November 2025.
-
-\bibitem{ref8}
-\href{https://publichealthscotland.scot/publications/acute-hospital-activity-and-nhs-beds-information-annual/acute-hospital-activity-and-nhs-beds-information-annual-year-ending-31-march-2024/}{Acute hospital activity and NHS beds information (annual), Acute hospital activity and NHS beds information (annual) - year ending 31 March 2024 - Acute hospital activity and NHS beds information (annual) - Publications - Public Health Scotland, Public Health Scotland}, Accessed 17 November 2025.
-
-\bibitem{ref9}
-\href{https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fwww.gov.scot%2Fbinaries%2Fcontent%2Fdocuments%2Fgovscot%2Fpublications%2Fstatistics%2F2019%2F07%2Fpupil-census-supplementary-tables%2Fdocuments%2Fpupil-census-supplementary-statistics-2024%2Fpupil-census-supplementary-statistics-2024%2Fgovscot%253Adocument%2FPupil%252Bcensus%252Bsupplementary%252Bstatistics%252B2024%252B-%252BMarch.xlsx&wdOrigin=BROWSELINK}{Pupil census supplementary statistics 2024, Pupil+census+supplementary+statistics+2024+-+March.xlsx, Scottish Government}, Accessed 17 November 2025.
-
-\bibitem{ref10}
-\href{https://assets.publishing.service.gov.uk/media/687633d5a8d0255f9fe28ea4/Annual_Libraries_Report_2024_to_2025-1-accessible__1_.pdf}{Annual Libraries Report 2024 to 2025, Annual Libraries Report 2024 to 2025, Department for Culture, Media \& Sport}, Accessed 17 November 2025.
-
-\bibitem{ref11}
-\href{https://www.hw.ac.uk/about/profile}{Our profile, Our profile | Heriot-Watt University, Heriot-Watt University}, Accessed 17 November 2025.
-
-\bibitem{ref12}
-\href{https://rocketreach.co/heriot-watt-university-management_b5c629d6f42e0ca2}{Heriot-Watt University Management, Heriot-Watt University Management Team | Org Chart, Heriot-Watt University}, Accessed 17 November 2025.
-
-\bibitem{ref13}
-\href{https://www.qmu.ac.uk/about-the-university/facts-and-figures/}{Facts and Figures, Facts and Figures | Queen Margaret University, Queen Margaret University}, Accessed 17 November 2025.
-
-\bibitem{ref14}
-\href{https://www.napier.ac.uk/about-us/facts-and-figures}{Facts and Figures, Facts and Figures, Edinburgh Napier University}, Accessed 17 November 2025.
-
-\bibitem{ref15}
-\href{https://governance-strategic-planning.ed.ac.uk/sites/default/files/2024-08/Factsheet%202023/24.pdf}{Factsheet of Student Figures, 2023/24, 24.pdf, The University of Edinburgh}, Accessed 17 November 2025.
-
-\bibitem{ref16}
-\href{https://human-resources.ed.ac.uk/sites/default/files/2025-04/Staff%20Population%20Statistics.pdf}{Staff Population Statistics, Staff Population Statistics.pdf, The University of Edinburgh}, Accessed 17 November 2025.
-
-\bibitem{ref17}
 \href{https://www.learn.ed.ac.uk/ultra/courses/_129436_1/outline}{Methodology, Modelling and Consulting Skills (2025-2026)[SEM1]}, Accessed 21 November 2025.
 
-\bibitem{ref18}
+\bibitem{ref8}
+\href{https://cyclehoop.com/product/bikehangar/}{Bikehangar, Bikehangar® | Cyclehoop, Cyclehoop}, Accessed 17 November 2025.
+
+\bibitem{ref9}
+\href{https://www.xjd.com/a-how-much-does-a-lime-bike-cost-to-make/}{How much does a lime bike cost to make, how much does a lime bike cost to make - XJD, XJD}, Accessed 17 November 2025.
+
+\bibitem{ref10}
+\href{https://ulaads.eu/wp-content/uploads/2022/03/ULaaDS_City-Profile_Edinburgh.pdf}{ULaaDS: factsheets baseline and city profiles, Edinburgh}, Accessed 21 November 2025.
+
+\bibitem{ref11}
 \href{https://www.edinburghhsc.scot/the-ijb/jsna/populationanddemographics/}{Edinburgh Integration
 Joint Board}, Accessed 21 November 2025.
 
-\bibitem{ref19}
+\bibitem{ref12}
 \href{https://www.nrscotland.gov.uk/statistics-and-data/council-area-profiles/edinburgh-city/}{Council area profile:
 Edinburgh City}, Accessed 21 November 2025.
 
-\bibitem{ref20}
+\bibitem{ref13}
 \href{https://roadgenius.com/statistics/tourism/uk/edinburgh/}{Edinburgh Tourism Statistics}, Accessed 21 November 2025.
 
+\bibitem{ref14}
+\href{https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fwww.gov.scot%2Fbinaries%2Fcontent%2Fdocuments%2Fgovscot%2Fpublications%2Fstatistics%2F2019%2F07%2Fpupil-census-supplementary-tables%2Fdocuments%2Fpupil-census-supplementary-statistics-2024%2Fpupil-census-supplementary-statistics-2024%2Fgovscot%253Adocument%2FPupil%252Bcensus%252Bsupplementary%252Bstatistics%252B2024%252B-%252BMarch.xlsx&wdOrigin=BROWSELINK}{Pupil census supplementary statistics 2024, Pupil+census+supplementary+statistics+2024+-+March.xlsx, Scottish Government}, Accessed 17 November 2025.
+
+\bibitem{ref15}
+\href{https://www.gov.scot/publications/summary-statistics-for-schools-in-scotland-2024/pages/school-teachers/}{Summary statistics for schools in Scotland 2024, School teachers - Summary statistics for schools in Scotland 2024 - gov.scot, Scottish Government},  Accessed 17 November 2025.
+
+\bibitem{ref16}
+\href{https://www.hw.ac.uk/about/profile}{Our profile, Our profile | Heriot-Watt University, Heriot-Watt University}, Accessed 17 November 2025.
+
+\bibitem{ref17}
+\href{https://rocketreach.co/heriot-watt-university-management_b5c629d6f42e0ca2}{Heriot-Watt University Management, Heriot-Watt University Management Team | Org Chart, Heriot-Watt University}, Accessed 17 November 2025.
+
+\bibitem{ref18}
+\href{https://www.qmu.ac.uk/about-the-university/facts-and-figures/}{Facts and Figures, Facts and Figures | Queen Margaret University, Queen Margaret University}, Accessed 17 November 2025.
+
+\bibitem{ref19}
+\href{https://www.napier.ac.uk/about-us/facts-and-figures}{Facts and Figures, Facts and Figures, Edinburgh Napier University}, Accessed 17 November 2025.
+
+\bibitem{ref20}
+\href{https://governance-strategic-planning.ed.ac.uk/sites/default/files/2024-08/Factsheet%202023/24.pdf}{Factsheet of Student Figures, 2023/24, 24.pdf, The University of Edinburgh}, Accessed 17 November 2025.
+
 \bibitem{ref21}
-\href{https://www.fleetnews.co.uk/costs/fuel-prices/#:~:text=Table_title:%20Regional%20petrol%20and%20diesel%20fuel%20prices,PPL:%20142.22%20%7C%20Unleaded%20PPL:%20134.06%20%7C}{Regional petrol and diesel fuel prices}, Accessed 21 November 2025.
+\href{https://human-resources.ed.ac.uk/sites/default/files/2025-04/Staff%20Population%20Statistics.pdf}{Staff Population Statistics, Staff Population Statistics.pdf, The University of Edinburgh}, Accessed 17 November 2025.
 
 \bibitem{ref22}
-\href{https://www.tomtom.com/newsroom/explainers-and-insights/how-the-way-you-drive-can-make-your-car-more-efficient/}{Greener driving, fuller pockets: How the way you drive can make your car more efficient}, Accessed 21 November 2025.
+\href{https://publichealthscotland.scot/publications/acute-hospital-activity-and-nhs-beds-information-annual/acute-hospital-activity-and-nhs-beds-information-annual-year-ending-31-march-2024/}{Acute hospital activity and NHS beds information (annual), Acute hospital activity and NHS beds information (annual) - year ending 31 March 2024 - Acute hospital activity and NHS beds information (annual) - Publications - Public Health Scotland, Public Health Scotland}, Accessed 17 November 2025.
 
 \bibitem{ref23}
-\href{https://www.lightfoot.co.uk/2025/04/02/the-hidden-cost-of-idling-a-simple-trick-to-cut-fuel-expenses-and-reduce-emissions/}{The Hidden Cost of Idling: A Simple Trick to Cut Fuel Expenses and Reduce Emissions}, Accessed 21 November 2025.
+\href{https://assets.publishing.service.gov.uk/media/687633d5a8d0255f9fe28ea4/Annual_Libraries_Report_2024_to_2025-1-accessible__1_.pdf}{Annual Libraries Report 2024 to 2025, Annual Libraries Report 2024 to 2025, Department for Culture, Media \& Sport}, Accessed 17 November 2025.
 
 \bibitem{ref24}
-\href{https://www.timeout.com/uk/news/this-surprising-city-has-been-named-britains-worst-for-commuters-020624?}{This surprising city has been named Britain’s worst for commuters}, Accessed 21 November 2025.
+\href{https://www.fleetnews.co.uk/costs/fuel-prices/#:~:text=Table_title:%20Regional%20petrol%20and%20diesel%20fuel%20prices,PPL:%20142.22%20%7C%20Unleaded%20PPL:%20134.06%20%7C}{Regional petrol and diesel fuel prices}, Accessed 21 November 2025.
 
 \bibitem{ref25}
-\href{https://www.transport.gov.scot/media/ia0dx2uh/chapter-1-road-transport-vehicles-scottish-transport-statistics-2023.pdf}{Scottish Transport Statistics 2023, Road Transport Vehicles}, Accessed 21 November 2025.
+\href{https://www.lightfoot.co.uk/2025/04/02/the-hidden-cost-of-idling-a-simple-trick-to-cut-fuel-expenses-and-reduce-emissions/}{The Hidden Cost of Idling: A Simple Trick to Cut Fuel Expenses and Reduce Emissions}, Accessed 21 November 2025.
 
 \bibitem{ref26}
-\href{https://ulaads.eu/wp-content/uploads/2022/03/ULaaDS_City-Profile_Edinburgh.pdf}{ULaaDS: factsheets baseline and city profiles, Edinburgh}, Accessed 21 November 2025.
+\href{https://www.tomtom.com/newsroom/explainers-and-insights/how-the-way-you-drive-can-make-your-car-more-efficient/}{Greener driving, fuller pockets: How the way you drive can make your car more efficient}, Accessed 21 November 2025.
 
 \bibitem{ref27}
-\href{https://uploads-ssl.webflow.com/6102564995f71c83fba14d54/637d049543d8ef05b11341e8_CoMoUK%20bike%20share%20guidance%20for%20local%20authorities%202022.pdf}{Bike share guidance for local authorities}, Accessed 21 November 2025.
+\href{https://www.timeout.com/uk/news/this-surprising-city-has-been-named-britains-worst-for-commuters-020624?}{This surprising city has been named Britain’s worst for commuters}, Accessed 21 November 2025.
 
 \bibitem{ref28}
-\href{https://democracy.edinburgh.gov.uk/documents/s82577/8.1%20-%20Roads%20and%20Infrastructure%20Investment%20-%20Capital%20Delivery%20Priorities%202025_26.pdf}{Roads and Infrastructure Investment – Capital Delivery Priorities for 2025/26}, Accessed 23 November 2025.
+\href{https://www.transport.gov.scot/media/ia0dx2uh/chapter-1-road-transport-vehicles-scottish-transport-statistics-2023.pdf}{Scottish Transport Statistics 2023, Road Transport Vehicles}, Accessed 21 November 2025.
 
 \bibitem{ref29}
-\href{https://roadandmountainbikereviews.co.uk/25-striking-cycling-statistics-in-denmark/}{25 Striking Cycling Statistics in Denmark}, Accessed 23 November 2025.
+\href{https://uploads-ssl.webflow.com/6102564995f71c83fba14d54/637d049543d8ef05b11341e8_CoMoUK%20bike%20share%20guidance%20for%20local%20authorities%202022.pdf}{Bike share guidance for local authorities}, Accessed 21 November 2025.
 \end{thebibliography}
 
 \section*{6. APPENDICES}
@@ -371,56 +371,56 @@ $p_{3}$ & 55 & $c_{max}$ &  \pounds 3,750,000 &   $d_3$   & 0.8    \\
 \hline
 \end{tabular}
 \end{table}
-$T,\ s_i,\ L, \ p', \ \hat{p}, \ q_t, \ d_t$ were arbitrarily chosen, while n was assumed to be an ideal number in order to create all the potential locations for a new station in close proximity to each other. $h_{ij}$ was estimated to be the average of the historic $\text{data}^{\cite{ref17}}$ in any case. The values for the rest of the parameters were taken from outside sources in order to make the model as neat as possible. More precisely: \\ \\
-${S_i}^{\cite{ref5}}, \ {c_1}^{\cite{ref5}}, \ {c_2}^{\cite{ref6}},\  {p_{car}}^{\cite{ref26}}$ were found essentially from the references, and no extra calculations were needed. \\ \\
-$\text{Maximum Station capacity according to old data}^{\cite{ref17}}=69$ \\ 
-$\text{Number of bikes that can fit in a hangar}^{\cite{ref5}}=6$ \\
+$T,\ s_i,\ L, \ p', \ \hat{p}, \ q_t, \ d_t$ were arbitrarily chosen, while n was assumed to be an ideal number in order to create all the potential locations for a new station in close proximity to each other. $h_{ij}$ was estimated to be the average of the historic $\text{data}^{\cite{ref7}}$ in any case. The values for the rest of the parameters were taken from outside sources in order to make the model as neat as possible. More precisely: \\ \\
+${S_i}^{\cite{ref8}}, \ {c_1}^{\cite{ref8}}, \ {c_2}^{\cite{ref9}},\  {p_{car}}^{\cite{ref10}}$ were found essentially from the references, and no extra calculations were needed. \\ \\
+$\text{Maximum Station capacity according to old data}^{\cite{ref7}}=69$ \\ 
+$\text{Number of bikes that can fit in a hangar}^{\cite{ref8}}=6$ \\
 $\to M_i=\text{Maximum number of hangars in station $i$}=\lfloor \frac{69}{6} \rfloor=11$
 \\ \\
-$\to p_1 = \text{average number of people per residence}^{\cite{ref18}}$ = 2 \\ \\
-$\text{Total population of Edinburgh}^{\cite{ref19}}$ = 530,680 \\
-$\text{Average annual number of tourists in Edinburgh}^{\cite{ref20}} = 2,560,000$ \\
+$\to p_1 = \text{average number of people per residence}^{\cite{ref11}}$ = 2 \\ \\
+$\text{Total population of Edinburgh}^{\cite{ref12}}$ = 530,680 \\
+$\text{Average annual number of tourists in Edinburgh}^{\cite{ref13}} = 2,560,000$ \\
 Assumption that $25\%$ of tourists would be interested in taking a bike \\
 Total number of people expected to access commercial buildings with bike = $530,680+\frac{25}{100}2,560,000=1,170,680$\\
-$\text{Total number of commercial buildings}^{\cite{ref17}}$ = 551\\
+$\text{Total number of commercial buildings}^{\cite{ref7}}$ = 551\\
 $\to p_2 =1,170,680/551\approx 2124$ \\ \\
-$\text{Average number of 16-18 year old students in a school}^{\cite{ref9}} = 6679$\\
-$\text{Average number of stuff in school}^{\cite{ref7}} = 3669$\\
-$\text{Number of Schools in Edinburgh}^{\cite{ref17}}$ = 188\\
+$\text{Average number of 16-18 year old students in a school}^{\cite{ref14}} = 6679$\\
+$\text{Average number of stuff in school}^{\cite{ref15}} = 3669$\\
+$\text{Number of Schools in Edinburgh}^{\cite{ref7}}$ = 188\\
 $\to p_3 = (6679+ 3669)/188 \approx 55$ \\ \\
-$\text{Number of University Students and Staff in Edinburgh}^{\cite{ref11}\cite{ref12}\cite{ref13}\cite{ref14}\cite{ref15}\cite{ref16}} = 128,869$ \\
-$\text{Number of University Buildings}^{\cite{ref17}}$ = 28 \\
+$\text{Number of University Students and Staff in Edinburgh}^{\cite{ref16}\cite{ref17}\cite{ref18}\cite{ref19}\cite{ref20}\cite{ref21}} = 128,869$ \\
+$\text{Number of University Buildings}^{\cite{ref7}}$ = 28 \\
 $\to p_4 =128,869/ 28 \approx 4602$ \\ \\
 Total population of Edinburgh = 530,680 \\
-$\text{Fraction of population going to hospital every year}^{\cite{ref8}}$ = $\frac{1}{8}$ \\
+$\text{Fraction of population going to hospital every year}^{\cite{ref22}}$ = $\frac{1}{8}$ \\
 Approximate number of people going to the hospital in a year = $530,680/8=66,335$ \\
 Assumed proportion of hospitalized people having a visitor = 0.5 \\
-$\text{Number of hospitals in Edinburgh}^{\cite{ref17}}$ = 16\\
+$\text{Number of hospitals in Edinburgh}^{\cite{ref7}}$ = 16\\
 $\to p_5=\frac{66,335\cdot 0.5}{16}\approx 2073$ \\ \\
-$\text{Fraction of people having a library membership}^{\cite{ref10}} =\frac{1}{4}$ \\
+$\text{Fraction of people having a library membership}^{\cite{ref23}} =\frac{1}{4}$ \\
 Number of people going to the libraries $=530,335/4 \approx 132,670$ \\
-$\text{Number of libraries in Edinburgh}^{\cite{ref17}}$ = 49 \\
+$\text{Number of libraries in Edinburgh}^{\cite{ref7}}$ = 49 \\
 $\to p_6=\frac{132,670}{49}\approx2707$ \\ \\
-Average fuel price per liter in $\text{Edinburgh}^{\cite{ref21}}$ = 151.52 pences = 1.5152 pounds \\
-Average fuel consumption in an hour of $\text{idle}^{\cite{ref23}}$ = 2.27 liters \\
-$\text{Average percentage of fuel consumption when driving, compared to idle}^{\cite{ref22}}$ = $175\% $ \\
+Average fuel price per liter in $\text{Edinburgh}^{\cite{ref24}}$ = 151.52 pences = 1.5152 pounds \\
+Average fuel consumption in an hour of $\text{idle}^{\cite{ref25}}$ = 2.27 liters \\
+$\text{Average percentage of fuel consumption when driving, compared to idle}^{\cite{ref26}}$ = $175\% $ \\
 Average fuel consumption in an hour of driving = $2.27\cdot1.75=3.9725$ liters, and \\
 Average price for an hour of driving = $1.5152\cdot3.9725 = 6.019132$ pounds \\
 $\to c_{car}=$ average gas price for a minute of driving $=6.019132/60\approx$ 0.1 pounds \\
 \\
-Average driving time for the average person per $\text{week}^{\cite{ref24}}$ = 11.52 hours \\
+Average driving time for the average person per $\text{week}^{\cite{ref27}}$ = 11.52 hours \\
 Average driving time for the average person per day $= 11.52/7=1.6457$ hours \\
 Average driving cost for the average person per day $= 1.6457\cdot6.019132 = 9.90577$ pounds \\
 Average driving cost for the average person per month $= 9.90577\cdot30= 297.1731456$ pounds \\
-$\text{Number of dwellings in Edinburgh}^{\cite{ref18}} = 253,222$ \\
-$75\% - 40\% = 35\% $ of households have one $\text{car}^{\cite{ref25}}$  $\Rightarrow$ 88,628 households have one car \\
-$40\% $ of households have more than one $\text{car}^{\cite{ref25}}$  $\Rightarrow$ 101,289 households with more than one car \\
+$\text{Number of dwellings in Edinburgh}^{\cite{ref11}} = 253,222$ \\
+$75\% - 40\% = 35\% $ of households have one $\text{car}^{\cite{ref28}}$  $\Rightarrow$ 88,628 households have one car \\
+$40\% $ of households have more than one $\text{car}^{\cite{ref28}}$  $\Rightarrow$ 101,289 households with more than one car \\
 Operating cars in Edinburgh $=88,628 + 2\cdot101,289 = 291,206$ \\
 $\to c_{total}=$ Total cost for car fuel for all residents in a month = $291,206 \cdot297.1731456 \approx 86,538,603$ pounds
 \\  \\Total population of Edinburgh = 530,680 \\
-Cost for such a plan for a city of 300k people = 1,500,000-3,000,000 $\text{pounds}^{\cite{ref27}}$ $\Rightarrow$ \\
+Cost for such a plan for a city of 300k people = 1,500,000-3,000,000 $\text{pounds}^{\cite{ref29}}$ $\Rightarrow$ \\
 $\approx$ 2,250,000 pounds \\
-Cost for such a plan for a city of 750k people =  3,000,000-7,500,000 $\text{pounds}^{\cite{ref27}}$ $\Rightarrow$ \\
+Cost for such a plan for a city of 750k people =  3,000,000-7,500,000 $\text{pounds}^{\cite{ref29}}$ $\Rightarrow$ \\
 $\approx$ 5,250,000 pounds \\
 $\to c_{max} = (2,250,000+5,250,000)/2=3,750,000 $
 \subsection*{6.1. APPENDIX B}
