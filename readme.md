@@ -6,17 +6,17 @@ the model aims to plan the deployment of stations across 250 generated clusters 
 - Python 3.12.11 with Python Mosel API
 
 ### 1.2 The Team
-Ben de Sousa <br>
-Alexandros Zachakos <br>
-Nolan Willoughby <br>
-Todd House
+Ben de Sousa s2892249@ed.ac.uk<br>
+Alexandros Zachakos s2899095@ed.ac.uk<br>
+Nolan Willoughby s2822750@ed.ac.uk<br>
+Todd House s2809867@ed.ac.uk
 
 ## 2 Packages Required
 - pandas 2.3.3
 - xpress 9.7.0
 - numpy 2.3.4
 - matplotlib 3.10.7
-- sklearn
+- sklearn 1.7.2
 
 ## 3 Auxiliary Scripts
 These are supporting scripts required for the running of the models. We recommend that you run all of them besides 2.1, to ensure full model functionality.
