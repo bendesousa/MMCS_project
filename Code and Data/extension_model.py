@@ -74,7 +74,7 @@ def period_prob(previous_results, period, m = np.load('m_matrix.npy')):
 	degradation_factors = [1, .9, .8]
 	# periodic % budget available
 	periodic_pct_budget = [0.5, 0.3, 0.2]
-	periodic_pct_sec_obj = [0, 0, 1]
+	periodic_pct_sec_obj = [1/3, 1/3, 1/3]
 	#Max hangars for a station
 	M = 11
 

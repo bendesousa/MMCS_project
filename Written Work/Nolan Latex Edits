@@ -1,0 +1,425 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage{amsmath}
+\usepackage[a4paper, margin=3cm]{geometry}
+\usepackage{hyperref}
+\usepackage{float}
+
+\title{A Sustainable Electric Bicycle Scheme for Edinburgh}
+\author{Benjamin de Sousa, Alexandros Zachakos, Todd House & Nolan Willoughby}
+\date{}
+
+\begin{document}
+\setlength{\parindent}{0pt}
+\vspace*{1.5cm}
+\begin{center}
+{\Huge A Sustainable Electric Bicycle Scheme for Edinburgh}\\[1em]
+{\large Benjamin de Sousa, Alexandros Zachakos, Todd House \& Nolan Willoughby}\\[1em]
+{\large MMCS Consultancy Project}
+\end{center}
+\newpage
+\section*{CONTENTS}
+1 Introduction	\dotfill 3 \\
+\hspace*{0.5cm} 1.1	Historical Context\dotfill 3\\
+\hspace*{0.5cm} 1.2	Objectives	\dotfill3\\
+\hspace*{0.5cm} 1.3	Deliverables	\dotfill3\\
+2 Modelling Approach	\dotfill4\\
+\hspace*{0.5cm} 2.1 Vanilla Model	\dotfill4\\
+\hspace*{0.5cm} 2.2 Extended Model	\dotfill7\\
+3 Results	\dotfill8\\
+4 Conclusion	\dotfill8\\
+5 References	\dotfill8\\
+6 Appendix	\dotfill8
+\newpage
+\section*{1. INTRODUCTION}
+The city of Edinburgh is comprised of many winding and tight streets befitting its ancient origins. As such it is well serviced by a host of public transport options that help to reduce the load on its infrastructure. However, there is a lack of more personal public transport options in the city. This results in limits to the coverage that the public transport can provide due to the nature of the city’s roads and increased personal car traffic. This report aims to provide a solution, titled “E-Bike Edinburgh,” to this problem with the reintroduction of an electric bicycle scheme that would be supported by the city council and a consortium of local employers.
+\subsection*{1.1 HISTORICAL CONTEXT}
+Edinburgh has experienced a consistent rise in road traffic over the past 30 years. There has been an increase of 376.9 million miles of vehicle travel per year over that period[2]. By contrast, Edinburgh’s air pollution has been steadily improving, with NO2 levels dropping by ~10µg m-3 in the period of 2007-2023[3]. However, Edinburgh has still yet to hit its 2030 net-zero target and is still looking for potential solutions to achieve it[4]. Both of these factors would be greatly aided by the reintroduction of a cycle hire scheme. \\
+This report frames the proposal as a reintroduction because Serco, a multi-sector firm, ran a cycle hire scheme in Edinburgh between 2018-2021[1]. Whilst relatively successful with 95 stations constructed and 423,000 trips serviced over the period, it eventually was closed due to financial challenges[1]. This report hopes to justify the new scheme through the careful application of a mathematical model that accounts for the flaws of the previous scheme whilst providing clear and substantial improvements in the service provided.
+\subsection*{1.2 OBJECTIVES}
+The key objectives of this project will be structured within an Environmental, Social, and Governance (ESG) framework. This should allow for the greatest return on investment as well as the greatest benefit to the community.
+\begin{itemize}
+    \item \textbf{Environmental:}
+An increase in the number of bicycle trips leading to a reduction in motor vehicle traffic
+    \item \textbf{Social:}
+A vastly increased rate of coverage by the scheme allowing for a larger number of users to benefit from it
+    \item \textbf{Governance:}
+ A reduction in infrastructure costs for the Council due to reduced road traffic and an employee subsidy for the scheme for the consortium
+\end{itemize}
+\subsection*{1.3. DELIVERABLES}
+The three key deliverables for the base model would be:
+\begin{itemize}
+    \item Number and size of stations constructed
+    \item Number of bikes produced
+    \item Selection of station locations
+\end{itemize}
+Further factors and objectives will be considered in the extended modelling approach discussed later in this report.
+\newpage
+\section*{2. MODELLING APPROACH}
+\subsection*{2.1. BASE MODEL}
+In order to model Edinburgh's new bike scheme, we had to apply a clustered net over the city, where each cluster represents a candidate bike station. This was done by assigning the 33,669 provided points of interest (POIs) to 250 clusters using the K-means clustering algorithm. This algorithm achieves this by randomly plotting K (250) centroids in the data space (latitude and longitude of the POIs), assigning data points to the closest centroid, re-plotting the centroids to the average of their respective data points, and repeating until a stable solution is reached. Typically, this algorithm is run over a large number of iterations (300) and gives the result with the corresponding least sum of squared distance between each data point and its assigned centroid. For this application, centroids were weighted towards, in descending order, libraries, schools and universities, commercial and hospital buildings, and residences by creating duplicates of each POI according to their category before clustering, in an attempt to create candidate stations with more convenient access to POIs with higher predicted demand. Stations from the previous scheme were associated with the candidate station whose cluster centroid had the lowest Cartesian distance to the previous station's location. \\ \\
+Based on this, we assume the following indices: \\
+$k\in\{1,...,6\}=\{\text{residential, commercial, school, university, hospital, library}\}$ \\
+$i,j\in \{1,2,...,n\}$ \\
+$t\in\{1,...,T\}$ \\ 
+where n, T represent the respective parameters of those defined below:
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{2}{|c|}{\textbf{General Parameters}} \\
+\hline
+$n$ & total number of clusters \\
+$T$ & number of periods in which the plan is expected to be completed \\
+\hline
+\multicolumn{2}{|c|}{\textbf{Parameters for hangars and bikes}} \\
+\hline
+$M_i$ &  maximum number of hangars in station $i$ \\
+$s_i$ &  minimum number of bikes in each station\\
+$S_i$ & maximum number of bikes in a hangar \\
+$m_{ij}$ & average number of bike trips from cluster $i$ to cluster $j$ in a month \\
+$h_{ij}$ & average time to go from cluster $i$ to $j$ \\ 
+\hline
+\multicolumn{2}{|c|}{\textbf{POI Parameters}} \\
+\hline
+$p_k$ & weight of type $k$ POI \\
+$\alpha_{i,k}$ & number of type $k$ POIs in cluster $i$ \\
+$L$ & minimum number of POI's we want to cover \\
+\hline
+\multicolumn{2}{|c|}{\textbf{Cost Parameters}} 
+\\
+\hline
+$c_1$ & cost of installing a hangar \\
+$c_2$ & cost of installing a bike \\
+$c_{car}$ & car fuel cost for 1 minute of driving\\
+$c_{total}$ & total cost of car fuel for all residents in a month \\
+$c_{max}$ & total budget for the project \\ 
+\hline
+\multicolumn{2}{|c|}{\textbf{Proportional Parameters}} \\
+\hline
+$p'$ & proportion of the hangar that is initially occupied by bikes \\
+$p_{car}$ & proportion of the population that initially uses a car\\
+$\hat{p}$ & proportion of the total fuel expenditures of cars that we want to eliminate \\ 
+$q_t$ & percentage of the total budget available during period $t$ \\
+$d_t$ & dropping percentage for social value when opening a station during period $t$
+\\
+\hline
+\end{tabular}
+\end{table} \\ \\
+The reason the last parameter $d_t$ is defined is to give prioritize opening candidate stations with higher associated effects on the objective function in earlier periods. $q_t,d_t are defined such that $q_t,d_t\in\left[0,1\right]$ and $\sum_{t=1}^Tq_t=1$. 
+\\ \\
+For $m_{ij}$ without historical station data associated, $m_{ij}$ must be estimated. This is done by creating an $n\times n$ matrix $\mathcal{M}$ approximating the missing data, for which the rows represent trip origin clusters, and the columns trip terminus clusters. This matrix can be split into four parts. The values at the top left corner represent the trips where a station is associated with both clusters $i$ and $j$. In the top right (bottom left) corner are the values where a station is not associated with cluster $j$ ($i$). These values are defined as the average of all the trips that started from cluster $i$ (or finished in $j$). The bottom right corner is with cluster pairs where neither cluster is associated with a historic station, and they are estimated as the mean of all trips per station. So, if $N$ is the number of clusters with an assoicated historic station, then such a matrix $\mathcal{M}$ would have values:
+$$
+\mathcal{M}_{n\times n} = \begin{pmatrix}
+m_{11} & \cdots & m_{1N} & \frac{1}{N}\sum_{l=1}^Nm_{1l} & \cdots & \frac{1}{N}\sum_{l=1}^Nm_{1l}\\
+\vdots & \ddots & \vdots & \vdots & \ddots & \vdots\\
+m_{N1} & \cdots & m_{NN}  & \frac{1}{N}\sum_{=1}^Nm_{Nl} & \cdots & \frac{1}{N}\sum_{l=1}^Nm_{Nl} \\
+\frac{1}{N}\sum_{r=1}^Nm_{r1} &\cdots &\frac{1}{N}\sum_{r=1}^Nm_{rN} & \frac{1}{N^2}\sum_{r=1}^N\sum_{l=1}^Nm_{rl} & \cdots & \frac{1}{N^2}\sum_{r=1}^N\sum_{l=1}^Nm_{rl} \\
+\vdots & \ddots & \vdots & \vdots & \ddots & \vdots\\
+\frac{1}{N}\sum_{r=1}^Nm_{r1} &\cdots &\frac{1}{N}\sum_{r=1}^Nm_{rN} & \frac{1}{N^2}\sum_{r=1}^N\sum_{l=1}^Nm_{rl} & \cdots & \frac{1}{N^2}\sum_{r=1}^N\sum_{l=1}^Nm_{rl}
+\end{pmatrix}
+$$ \\
+In this way, underperforming historic stations are disadvantaged, as their usage is estimated to be less than that of other potential stations in new locations. \\ \\ For clarity, term $m_{ij}$ is used for all $i$ and $j$, independently of $i$ or $j$'s association with a historic station. Following this, the following sums are defined:
+$$\sum_{j=1}^nm_{ij}=\text{ average number of bike trips starting from cluster i in a month}$$
+$$\sum_{i=1}^nm_{ij}=\text{ average number of bike trips ending up in cluster j in a month}$$
+$$\sum_{j=1}^n (m_{ij}+m_{ji})=\text{ total usage of a station in cluster $i$}$$
+\\
+Given these parameters, the decision variables of the problem are defined as: \\
+$x_{i,t} =
+\begin{cases}
+1, & \text{If a station is placed in cluster $i$ during period t} ,\\
+0,  & \text{Otherwise }
+\end{cases}$
+\\
+$y_{i,t}=\text{number of bikes in station } i \text{ during period }t$
+\\
+$z_{i,t}=\text{number of hangars installed in station }i \text{ during period } t$ 
+\\
+\\
+Given these variables, the following sums are defined for clarity:\\
+$\bar{x}_i = \sum_{t=1}^Tx_{i,t} :$ indication of if a station is placed in cluster $i$ or not \\
+$\bar{y}_i = \sum_{t=1}^Ty_{i,t} :$ total number of bikes placed in station $i$ \\
+$\bar{z}_i = \sum_{t=1}^Tz_{i,t} :$ total number of hangars installed in station $i$ 
+\\ \\
+Considering all of the above, the Social and Environmental values of this scheme, as well as its Total cost, are defined as follows. \\
+The Social Value of a station in cluster $i$ is dependent on the number of POIs it covers, the importance of these POIs, the estimated usage of the station, and the number of bikes at it. Specifically:
+$$\text{Social Value}=\sum_{t=1}^T\sum_{i=1}^n\sum_{k=1}^6d_tp_k\alpha_{ik}\sum_{j=1}^n (m_{ij}+m_{ji})y_{i,t}$$
+The Environmental Value is defined as the reduction in consumer spending on car fuel in a month:
+$$\text{Environmental Value}=p_{car}c_{car}\sum_{i=1}^n\sum_{j=1}^nm_{ij}h_{ij}\bar{x}_i$$
+Finally, the total cost is defined as:
+$$\text{Total Cost}=c_1\sum_{i=1}^n\bar{z}_i+c_2\sum_{i=1}^n\bar{y}_i$$
+The scheme should seek to maximize the former two values, while also minimizing the total cost. In order to achieve that, the Social Value is used as an objective function, while Environmental Value and Total Cost are constrained to near-optimal.
+\\ \\
+Firstly, the Environmental Value should be greater than a proportion of the total money expended in car fuel, hence:
+$$\text{Environmental Value }\geq \hat{p}c_{total} \ \ \ \ (1)$$ 
+Secondly, the Total Cost should not exceed the given budget, and expenses should be allocated according to periods' budgets, which gives us the following constraints: 
+$$\text{Total Cost} \leq c_{max} \ \ \ \ (2) \ \ \ \ \ \ \ \ \ \ \sum_{i=1}^n(c_1z_{i,t}+c_2y_{i,t}) \le q_tc_{max} \ \ \ \ (3) $$
+It is also apparent that a station is may only be built in one period, thus:   \ \   
+$\bar{x}_i \leq 1 \ \  (4)$ \\ \\
+Furthermore, hangars may only be installed at candidate stations that are opened during the period in which that candidate is opened, and a station should only include a reasonable number of hangars:
+$$x_{i,t}\leq z_{i,t} \leq M_ix_{i,t} \ \ \ \ (5)$$
+The adequacy of bikes in stations is important as well, so all stations should open with a minimum number of bikes regardless of anticipated demand, and station's with anticipated demand greater than this minimum should open with enough bikes to satisfy that anticipated demand. By contrast, a station should only open with as many bikes as can fit in its hangars while leaving some space for potential arrivals. Therefore: 
+$$s_ix_{i,t}\leq y_{i,t}\leq p'S_iz_{i,t}  \ \ \ (6) \ \ \ \ \ \ \ y_{i,t}\geq \sum_{j=1}^n(m_{ij}-m_{ji})x_{i,t} \ \ \ (7)$$ 
+Another equally important aspect to consider is that the scheme cover enough POIS to connect the city, leading to the last constraint: 
+$$\sum_{t=1}^T\sum_{i=1}^n\sum_{k=1}^6\alpha_{ik}x_{i,t}\geq L \ \ \ \ (8)$$
+In total, the optimization problem turns out to be: 
+$$\text{Maximize: \  Social Value}$$
+$$\text{Subject to: \  (1)-(8)}$$
+\subsection*{2.2. EXTENDED MODEL}
+The model may be extended to include a stochastic element:\\ 
+The extended model runs independently for each of the 3 periods, where the bike network is getting enriched and Edinburgh's residents determine the usage of each station on a monthly basis. This means that when positive, the index $t$ now also denotes the period for which the model runs. If $t$ is zero then we refer to each station's $\text{capacity}^{\cite{ref17}}$ from the old scheme. Let this value be $y_{i,0}$ for station $i$. Nonetheless, $x_{i,t}$, $y_{i,t}$, and $z_{i,t}$ still refer to their original definition.\\ 
+Let:
+$$m_{ij}^t=\text{ average number of trips from cluster $i$ to cluster j during period }t, \ \ t\in\{0,1,2,3\}$$
+In any period $t$, the data that are used are taken from period $t-1$, and in the first period we use the data from period 0 unchanged. For the rest of the periods, in an effort to predict the values of $m_{ij}^t$, we assume that they are all taken by the following normal distributions: $$N\left(\frac{y_{i,t-1}+y_{j,t-1}}{y_{i,t-2}+y_{j,t-2}}m_{ij}^{t-1},\sigma^2\right), \text{ for $t=2$} \ \ \ \text{ and } \ \ \ N\left(\frac{\sum_{r=1}^{t-1}(y_{i,r}+y_{j,r})}{\sum_{r=1}^{t-2}(y_{i,r}+y_{j,r})}m_{ij}^{t-1},\sigma^2\right), \text{ for $t\in\{3,...,T\}$} $$
+and rounded to the closest integer, with all negative values set to 0. This defines m_{ij}^{t} by the proportion of bikes at $i$ and $j$ in each period, relative with the previous one, affecting the total number of trips. Similarly with the basic model, if there are no stations in either cluster $i$ or $j$, then we let $N_t$ be the number of stations opened until period $t-1$ and $m_{ij}^t $ can be approximated by the matrix:
+$$
+\mathcal{M}_{n\times n}^t = \begin{pmatrix}
+m_{11}^t & \cdots & m_{1N_t}^t & \frac{1}{N_t}\sum_{l=1}^{N_t}m_{1l}^t & \cdots & \frac{1}{N_t}\sum_{l=1}^{N_t}m_{1l}^t\\
+\vdots & \ddots & \vdots & \vdots & \ddots & \vdots\\
+m_{N_t1}^t & \cdots & m_{N_tN_t}^t  & \frac{1}{N_t}\sum_{l=1}^{N_t}m_{N_tl}^t & \cdots & \frac{1}{N_t}\sum_{l=1}^Nm_{N_tl}^t \\
+\frac{1}{N_t}\sum_{r=1}^{N_t}m_{r1}^t &\cdots &\frac{1}{N_t}\sum_{r=1}^{N_t}m_{rN_t}^t & \frac{1}{N_t^2}\sum_{r=1}^{N_t}\sum_{l=1}^{N_t}m_{rl}^t & \cdots & \frac{1}{N_t^2}\sum_{r=1}^{N_t}\sum_{l=1}^{N_t}m_{rl}^t \\
+\vdots & \ddots & \vdots & \vdots & \ddots & \vdots\\
+\frac{1}{N_t}\sum_{r=1}^{N_t}m_{r1}^t &\cdots &\frac{1}{N_t}\sum_{r=1}^{N_t}m_{rN_t}^t & \frac{1}{N_t^2}\sum_{r=1}^{N_t}\sum_{l=1}^{N_t}m_{rl}^t & \cdots & \frac{1}{N_t^2}\sum_{r=1}^{N_t}\sum_{l=1}^{N_t}m_{rl}^t
+\end{pmatrix}
+$$
+but for clarity we will again assume that $m_{ij}^t$ denotes its intended value independently of potential approximations.
+\\ 
+Having defined all of the above, the extended model for each period t is given by:
+$$\text{Maximize:} \ \ \sum_{i=1}^n\sum_{k=1}^6p_k\alpha_{ik}\sum_{j=1}^n (m_{ij}^{t-1}+m_{ji}^{t-1})y_{i,t}$$
+$$\text{Subject to:} \ \ \ \ \ p_{car}c_{car}\sum_{i=1}^n\sum_{j=1}^nm_{ij}^{t-1}h_{ij}x_{i,t} \geq \frac{t}{T}\hat{p}c_{total} \ \ \ \ \ (1 \backslash \text{extension})$$
+$$\sum_{i=1}^n(c_1z_{i,t}+c_2y_{i,t}) \le q_tc_{max} \ \ \ \ (3\backslash \text{extension}) $$
+$$x_{i,t}\leq \sum_{r=1}^tz_{i,r} \leq M_ix_{i,t} \ \ \ \ (5\backslash \text{extension})$$
+$$s_ix_{i,t}\leq \sum_{r=1}^ty_{i,r}\leq p'S_i\sum_{r=1}^tz_{i,r}  \ \ \ (6\backslash \text{extension})$$
+$$\sum_{r=1}^ty_{i,r}\geq \sum_{j=1}^n(m_{ij}^{t-1}-m_{ji}^{t-1})x_{i,t} \ \ \ (7\backslash \text{extension})$$
+$$\sum_{i=1}^n\sum_{k=1}^6\alpha_{ik}x_{i,t}\geq \frac{t}{T} L \ \ \ \ (8 \backslash \text{extension})$$
+\section*{3. RESULTS}
+\subsection*{3.1. BASE MODEL}
+The base model generates a solution of opening 142 of the 250 candidate stations across three months. In the first month, 27 stations are opened with 1440 bikes and 288 hangars. In the second month, 21 stations are opened with 865 bikes and 173 hangars. In the third month, 94 stations are opened with 572 bikes and 116 hangars. In total the stations contain 2877 bikes, and 577 hangars. This monthly roll-out would allow the highest demand stations to be opened first to generate excitement and begin recouping the initial investment. This can be seen in the station to bike ratio for the three months. The model opens the smaller stations later to begin to maximize bike availability and cover more POIs after the highest demand locations are covered. \\ \\
+Each hangar is fitted with 6 docks that allow users to lock the bikes during return. The stations range from 5 to 55 bikes depending on expected demand with a maximum dock space for 66 bikes. Most of the larger stations are located around the city centre with a few spread across outer neighborhoods. A density spike plot of the bikes by station is shown in figure 1. All candidate solutions are shown with red spheres, and the blue spikes are proportional to the number of bikes assigned to that station. This solution uses all the initial proposed budget of £3,750,000. \\ \\
+The following estimates are based on the monthly data of the 142 stations opened. Pricing for the scheme is baseline planned as £1.50 to unlock the bike and £0.10 per minute of use. These values are within the range of the previous scheme and the ongoing VOI trials. Running the scheme with an estimated 64,442 monthly trips and an average trip duration of 32.44 minutes results in an estimated monthly revenue of £305,607.40. The time required to recoup the initial investment, without considering overhead costs or other operating expenses, is approximately 13 months. Given the focus on optimising POI coverage, the cost model was not a focus of the model analysis. Possible avenues exist to reduce this cost plan to the consumer such as providing employee discounts for those of contributing companies, monthly plans, or routine usage discounts.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{figure 1.png}
+    \caption{Bikes by Station}
+    \label{fig:myimage}
+\end{figure}
+\\
+In The City of Edinburgh Council budget for 2025/26 the carriageway and footways work accounts for £18.16 million or 71\% of the available $\text{funding}^{\cite{ref28}}$. The reduction of traffic driven by a successful intracity bike scheme could produce significant cost savings for the Council. Denmark ranks \#2 in happiness, 90\% bike ownership, notably, cycling accounts for 21\% of trips under 10 kilometers and 15\% of all trips in Denmark, showcasing its versatility as a mode of $\text{transport}^{\cite{ref29}}$.
+ If Edinburgh can capture a similar travel ratio, it could save the Council upwards of £4 million annually. Regarding the hangar’s feasibility, the city already has 200 bike hangars on streets and is interested in expanding the count. This is evidence of a successful product that users choose to pay into to increase bike security and reduce weather effects.
+ \subsection*{3.1.1. Sensitivity Analysis}
+ In the solving of this problem, two major binding constraints for the model can be observed: budget and minimum coverage requirements. A sensitivity analysis on these constraints is thus useful to identify possible future adjustments to the deployment of the scheme. \\ \\
+The budget was a clear binding constraint even prior to running the model. The proposed budget is based on the average of a range of possible budgets. Sensitivity analysis is also possible with the minimum coverage constraint enforced and with it completely relaxed, leading to the graphs below. The budget is tested on a range of £1,750,000 - £8,8250,000 increasing in increments of £500,00. The lower bound is selected as the initial cost of the historic scheme, the upper bound is the point in which our model reaches its maximum possible coverage based on its formulation with minimum coverage enforced. 
+\\
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figure 2.png}
+    \caption{Sensitivity Analysis of Budget (Left: Constrained, Right: Unconstrained)}
+    \label{fig:myimage}
+\end{figure} 
+
+In both cases raising the budget does eventually lead to an increase in total coverage before eventually plateauing. This is exactly as would be expected from the model as initially greater investment will be funnelled into the higher value stations, increasing their capacity. \\ \\
+In the constrained analysis, the model will push for maximum coverage. Period 0 reflects a general upwards trend at a low rate, as this is the initial investment period with no degradation in value. Period 1 does see a slump in the mid-range budgets before beginning to climb. This is likely because, whilst the budgets are below a certain threshold, focus is still on increasing the capacity of the valuable stations before increasing coverage when there is not substantial excess funding. Period 2 experiences an opposite trend to Period 1, even hitting zero at the highest budgets, this is likely as the degradation factor effect on investment value can only really be avoided if it is possible to build all the stations in earlier periods. \\ \\
+In the unconstrained model, a similar relationship exists between Period 1 and Period 2. However, Period 1 experiences a fall off whilst Period 0 increases more sharply and to a higher degree. This can be explained by an examination of the total coverage, which never reaches the theoretical maximum based on POI coverage. This indicates that the value of the busiest and highest POI density station is such that, without the model being forced to increase its coverage, it determines that increasing the capacity of such stations vastly outweighs benefit of increasing the total coverage. This follows as more people will benefit in the higher population/trip density areas of the city. \\ \\
+The analysis of minimum coverage was carried out with the budget constraint enforced and relaxed.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{figure 3.png}
+    \caption{Sensitivity Analysis of Minimum Coverage (Budget Constrained)}
+    \label{fig:placeholder}
+\end{figure} 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{figure 4.png}
+    \caption{Sensitivity Analysis of Minimum Coverage (Budget Unconstrained)}
+    \label{fig:placeholder}
+\end{figure}
+From the first set of graphs it can be seen that, while budget is constrained, minimum coverage does not have any significant effect on the objective value, and the coverage is maintained at the lowest possible amount. This likely happens from the model balancing the coverage requirements against investment in high value stations to ensure that there is no drop off in the social value of the project. \\ \\
+In the second set of graphs, if budget is unconstrained, then forcing a minimum coverage results in a large drop off in objective value. This is understood through the analysis of budget that the model strongly prefers to invest in a few high value stations as the impact the most number of people so forcing to increase coverage draws investment away from these stations. \\ \\
+Based on both sets of sensitivity analysis, an increase in budget would improve results. It could also be said that, based on current parameters, aiming for maximising coverage is detrimental. However, it must be noted that the model does not consider factors such as lack of bus services, benefit of cutting journey times, and increasing journey flexibility through the use of e-bikes. While the model does not consider these factors, they are still crucial to the success of such a scheme, and stakeholders should aim for high coverage.
+\subsection*{3.2. EXTENDED MODEL}
+Due to time constraints, the extension model was only run once to ensure functionality. During this run, the extension model generates a solution opening 143 of the 250 candidate stations. This is accomplished using 2880 bikes and 576 hangars. In the first month, 46 stations are opened with 1440 bikes and 288 hangars. In the second month, 46 stations are opened with 865 bikes and 173 hangars. In the third month, 51 stations are opened with 575 bikes and 115 hangars. While stations were once again allowed to open with anywhere from 5 to 55 bikes, all but three candidates were opened at either end of this bound. Further analysis of these results indicate that two of these stations were the last opened in rollout periods 1 and 2, and these stations were opened to the maximum capacity allowed by the remaining budget for their respective periods. All other stations opened in periods 1 and 2 were opened at the maximum allowed capacity of 55 bikes, while a single station is opened in period 1 with 10 bikes, while a single station is opened in period 2 with 40 bikes. By contrast, 44 stations were opened with only 5 bikes in the final rollout period, while the six are opened at the maximum capacity of 55 bikes, and a final station is opened with 25 bikes to reach the Period 3 budget limit. While time constraints limit the extent to which these results may be analyzed, it seems the formulation of the extension model could benefit from a tighter bound on the number of bikes with which a station might open according to predicted demand, as predicted demand at candidate stations does not currently seem to bind the solution in any noticeable way. \\ \\
+Unfortunately, due to the nature of the normal distribution, this run of the stochastic model resulted in unreasonably high estimated demand. This affected demand at every station, so the values of decision variables should still be reasonable. Unfortunately, these values make analysis of estimated revenue generated by this scheme unreasonable. While this should not affect every run of the model, it can be an issue on individual runs such as this one. \\ \\
+Beyond these adjustments, the greatest potential for future work lies in running the extension model significantly more times than has been done to date. Multi-stage stochastic programming of this form is more useful as the optimization is conducted more times and statistical inference can be made to greater levels of significance.
+\subsection*{3.3. MAINTENANCE TOOL}
+Provided in Appendix B is a mock-up of a maintenance forecasting and scheduling tool developed to enable long term maintenance activities to be planned effectively. This tool is modular and can be updated to accommodate changes to bikes allocated to each station and changes in number of stations open. The tool allows you to dynamically filter to see how many bikes are at any given station, how many maintenance hours, by category, are needed for each station. Furthermore, the tool has the basis for annual scheduling by station to allow planners to schedule maintenance around demand windows, especially seasonal fluctuations. Such scheduling is essential to ensure the highest quality product while maximising bike availability while being flexible enough to allow for unexpected events resulting in the need to remove bikes for critical maintenance.
+\section*{4. CONCLUSION}
+E-Bike Edinburgh provides a proven system capable of reducing traffic and CO2 emissions while providing an effective alternative to existing public transportation infrastructure. The bike rental scheme will provide an option to health-conscious commuters for daily travel at low cost to the council. The scheme also provides the opportunity for companies to contribute as part of carbon offsetting initiatives. Such contributions could enable the scheme to give special benefits to employees of those companies, such as discounted rates.
+\section*{5. REFERENCES}
+\begin{thebibliography}{99}
+
+\bibitem{ref1}
+\href{https://www.serco.com/uk/sector-expertise/transport/cycle-hire/edinburgh-cycle-hire}{Edinburgh Cycle Hire, Edinburgh Cycle Hire, Serco},  Accessed 10 November 2025
+
+\bibitem{ref2}
+\href{https://roadtraffic.dft.gov.uk/local-authorities/S12000036}{Road traffic statistics – City of Edinburgh, Road Traffic website - City of Edinburgh, UK Government}, Accessed 10 November 2025.
+
+\bibitem{ref3}
+\href{https://www.scottishairquality.scot/data/trends}{Data Trends Summary, Trends summary, Air Quality in Scotland},  Accessed 10 November 2025.
+
+\bibitem{ref4}
+\href{https://www.edinburgh.gov.uk/climate-2/climate-target-net-zero-2030/1}{Edinburgh’s net zero target, Edinburgh's net zero target – The City of Edinburgh Council, The City of Edinburgh Council}, Accessed 10 November 2025.
+
+\bibitem{ref5}
+\href{https://cyclehoop.com/product/bikehangar/}{Bikehangar, Bikehangar® | Cyclehoop, Cyclehoop}, Accessed 17 November 2025.
+
+\bibitem{ref6}
+\href{https://www.xjd.com/a-how-much-does-a-lime-bike-cost-to-make/}{How much does a lime bike cost to make, how much does a lime bike cost to make - XJD, XJD}, Accessed 17 November 2025.
+
+\bibitem{ref7}
+\href{https://www.gov.scot/publications/summary-statistics-for-schools-in-scotland-2024/pages/school-teachers/}{Summary statistics for schools in Scotland 2024, School teachers - Summary statistics for schools in Scotland 2024 - gov.scot, Scottish Government},  Accessed 17 November 2025.
+
+\bibitem{ref8}
+\href{https://publichealthscotland.scot/publications/acute-hospital-activity-and-nhs-beds-information-annual/acute-hospital-activity-and-nhs-beds-information-annual-year-ending-31-march-2024/}{Acute hospital activity and NHS beds information (annual), Acute hospital activity and NHS beds information (annual) - year ending 31 March 2024 - Acute hospital activity and NHS beds information (annual) - Publications - Public Health Scotland, Public Health Scotland}, Accessed 17 November 2025.
+
+\bibitem{ref9}
+\href{https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fwww.gov.scot%2Fbinaries%2Fcontent%2Fdocuments%2Fgovscot%2Fpublications%2Fstatistics%2F2019%2F07%2Fpupil-census-supplementary-tables%2Fdocuments%2Fpupil-census-supplementary-statistics-2024%2Fpupil-census-supplementary-statistics-2024%2Fgovscot%253Adocument%2FPupil%252Bcensus%252Bsupplementary%252Bstatistics%252B2024%252B-%252BMarch.xlsx&wdOrigin=BROWSELINK}{Pupil census supplementary statistics 2024, Pupil+census+supplementary+statistics+2024+-+March.xlsx, Scottish Government}, Accessed 17 November 2025.
+
+\bibitem{ref10}
+\href{https://assets.publishing.service.gov.uk/media/687633d5a8d0255f9fe28ea4/Annual_Libraries_Report_2024_to_2025-1-accessible__1_.pdf}{Annual Libraries Report 2024 to 2025, Annual Libraries Report 2024 to 2025, Department for Culture, Media \& Sport}, Accessed 17 November 2025.
+
+\bibitem{ref11}
+\href{https://www.hw.ac.uk/about/profile}{Our profile, Our profile | Heriot-Watt University, Heriot-Watt University}, Accessed 17 November 2025.
+
+\bibitem{ref12}
+\href{https://rocketreach.co/heriot-watt-university-management_b5c629d6f42e0ca2}{Heriot-Watt University Management, Heriot-Watt University Management Team | Org Chart, Heriot-Watt University}, Accessed 17 November 2025.
+
+\bibitem{ref13}
+\href{https://www.qmu.ac.uk/about-the-university/facts-and-figures/}{Facts and Figures, Facts and Figures | Queen Margaret University, Queen Margaret University}, Accessed 17 November 2025.
+
+\bibitem{ref14}
+\href{https://www.napier.ac.uk/about-us/facts-and-figures}{Facts and Figures, Facts and Figures, Edinburgh Napier University}, Accessed 17 November 2025.
+
+\bibitem{ref15}
+\href{https://governance-strategic-planning.ed.ac.uk/sites/default/files/2024-08/Factsheet%202023/24.pdf}{Factsheet of Student Figures, 2023/24, 24.pdf, The University of Edinburgh}, Accessed 17 November 2025.
+
+\bibitem{ref16}
+\href{https://human-resources.ed.ac.uk/sites/default/files/2025-04/Staff%20Population%20Statistics.pdf}{Staff Population Statistics, Staff Population Statistics.pdf, The University of Edinburgh}, Accessed 17 November 2025.
+
+\bibitem{ref17}
+\href{https://www.learn.ed.ac.uk/ultra/courses/_129436_1/outline}{Methodology, Modelling and Consulting Skills (2025-2026)[SEM1]}, Accessed 21 November 2025.
+
+\bibitem{ref18}
+\href{https://www.edinburghhsc.scot/the-ijb/jsna/populationanddemographics/}{Edinburgh Integration
+Joint Board}, Accessed 21 November 2025.
+
+\bibitem{ref19}
+\href{https://www.nrscotland.gov.uk/statistics-and-data/council-area-profiles/edinburgh-city/}{Council area profile:
+Edinburgh City}, Accessed 21 November 2025.
+
+\bibitem{ref20}
+\href{https://roadgenius.com/statistics/tourism/uk/edinburgh/}{Edinburgh Tourism Statistics}, Accessed 21 November 2025.
+
+\bibitem{ref21}
+\href{https://www.fleetnews.co.uk/costs/fuel-prices/#:~:text=Table_title:%20Regional%20petrol%20and%20diesel%20fuel%20prices,PPL:%20142.22%20%7C%20Unleaded%20PPL:%20134.06%20%7C}{Regional petrol and diesel fuel prices}, Accessed 21 November 2025.
+
+\bibitem{ref22}
+\href{https://www.tomtom.com/newsroom/explainers-and-insights/how-the-way-you-drive-can-make-your-car-more-efficient/}{Greener driving, fuller pockets: How the way you drive can make your car more efficient}, Accessed 21 November 2025.
+
+\bibitem{ref23}
+\href{https://www.lightfoot.co.uk/2025/04/02/the-hidden-cost-of-idling-a-simple-trick-to-cut-fuel-expenses-and-reduce-emissions/}{The Hidden Cost of Idling: A Simple Trick to Cut Fuel Expenses and Reduce Emissions}, Accessed 21 November 2025.
+
+\bibitem{ref24}
+\href{https://www.timeout.com/uk/news/this-surprising-city-has-been-named-britains-worst-for-commuters-020624?}{This surprising city has been named Britain’s worst for commuters}, Accessed 21 November 2025.
+
+\bibitem{ref25}
+\href{https://www.transport.gov.scot/media/ia0dx2uh/chapter-1-road-transport-vehicles-scottish-transport-statistics-2023.pdf}{Scottish Transport Statistics 2023, Road Transport Vehicles}, Accessed 21 November 2025.
+
+\bibitem{ref26}
+\href{https://ulaads.eu/wp-content/uploads/2022/03/ULaaDS_City-Profile_Edinburgh.pdf}{ULaaDS: factsheets baseline and city profiles, Edinburgh}, Accessed 21 November 2025.
+
+\bibitem{ref27}
+\href{https://uploads-ssl.webflow.com/6102564995f71c83fba14d54/637d049543d8ef05b11341e8_CoMoUK%20bike%20share%20guidance%20for%20local%20authorities%202022.pdf}{Bike share guidance for local authorities}, Accessed 21 November 2025.
+
+\bibitem{ref28}
+\href{https://democracy.edinburgh.gov.uk/documents/s82577/8.1%20-%20Roads%20and%20Infrastructure%20Investment%20-%20Capital%20Delivery%20Priorities%202025_26.pdf}{Roads and Infrastructure Investment – Capital Delivery Priorities for 2025/26}, Accessed 23 November 2025.
+
+\bibitem{ref29}
+\href{https://roadandmountainbikereviews.co.uk/25-striking-cycling-statistics-in-denmark/}{25 Striking Cycling Statistics in Denmark}, Accessed 23 November 2025.
+\end{thebibliography}
+
+\section*{6. APPENDICES}
+\subsection*{6.1. APPENDIX A}
+The following is a table indicating all the values for the parameters that were not taken straight from the data of the former plan: \\
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|l||l|l||l|l|}
+\hline
+\textbf{Parameter} & \textbf{Value} &
+\textbf{Parameter} & \textbf{Value} &
+\textbf{Parameter} & \textbf{Value} \\
+\hline
+$n$  & 250 & $p_4$  & 4602 & $p'$ & 0.83 \\
+\hline
+$T$  & 3 & $p_5$  & 2073 &  $p_{car}$ & 0.41 \\
+\hline
+$M_i$  & 11 & $p_6$  & 2707 &  $\hat{p}$ & 0.000124 \\
+\hline
+$s_i$ & 5 & L & 25,000 & $q_1$ & 0.5 \\
+\hline
+$S_i$ & 6 & $c_1$ & \pounds 4000 & $q_2$ & 0.3 \\
+\hline
+$h_{ij}$ & 21.55 min & $c_2$ & \pounds 500 & $q_3$ & 0.2 \\
+\hline
+$p_{1}$ & 2 & $c_{car}$ & \pounds 0.1 & $d_1$ & 1 \\
+\hline
+$p_{2}$ & 2124 & $c_{total}$ & \pounds 86,538,603 & $d_2$ & 0.9 \\
+\hline
+$p_{3}$ & 55 & $c_{max}$ &  \pounds 3,750,000 &   $d_3$   & 0.8    \\
+\hline
+\end{tabular}
+\end{table}
+$T,\ s_i,\ L, \ p', \ \hat{p}, \ q_t, \ d_t$ were arbitrarily chosen, while n was assumed to be an ideal number in order to create all the potential locations for a new station in close proximity to each other. $h_{ij}$ was estimated to be the average of the historic $\text{data}^{\cite{ref17}}$ in any case. The values for the rest of the parameters were taken from outside sources in order to make the model as neat as possible. More precisely: \\ \\
+${S_i}^{\cite{ref5}}, \ {c_1}^{\cite{ref5}}, \ {c_2}^{\cite{ref6}},\  {p_{car}}^{\cite{ref26}}$ were found essentially from the references, and no extra calculations were needed. \\ \\
+$\text{Maximum Station capacity according to old data}^{\cite{ref17}}=69$ \\ 
+$\text{Number of bikes that can fit in a hangar}^{\cite{ref5}}=6$ \\
+$\to M_i=\text{Maximum number of hangars in station $i$}=\lfloor \frac{69}{6} \rfloor=11$
+\\ \\
+$\to p_1 = \text{average number of people per residence}^{\cite{ref18}}$ = 2 \\ \\
+$\text{Total population of Edinburgh}^{\cite{ref19}}$ = 530,680 \\
+$\text{Average annual number of tourists in Edinburgh}^{\cite{ref20}} = 2,560,000$ \\
+Assumption that $25\%$ of tourists would be interested in taking a bike \\
+Total number of people expected to access commercial buildings with bike = $530,680+\frac{25}{100}2,560,000=1,170,680$\\
+$\text{Total number of commercial buildings}^{\cite{ref17}}$ = 551\\
+$\to p_2 =1,170,680/551\approx 2124$ \\ \\
+$\text{Average number of 16-18 year old students in a school}^{\cite{ref9}} = 6679$\\
+$\text{Average number of stuff in school}^{\cite{ref7}} = 3669$\\
+$\text{Number of Schools in Edinburgh}^{\cite{ref17}}$ = 188\\
+$\to p_3 = (6679+ 3669)/188 \approx 55$ \\ \\
+$\text{Number of University Students and Staff in Edinburgh}^{\cite{ref11}\cite{ref12}\cite{ref13}\cite{ref14}\cite{ref15}\cite{ref16}} = 128,869$ \\
+$\text{Number of University Buildings}^{\cite{ref17}}$ = 28 \\
+$\to p_4 =128,869/ 28 \approx 4602$ \\ \\
+Total population of Edinburgh = 530,680 \\
+$\text{Fraction of population going to hospital every year}^{\cite{ref8}}$ = $\frac{1}{8}$ \\
+Approximate number of people going to the hospital in a year = $530,680/8=66,335$ \\
+Assumed proportion of hospitalized people having a visitor = 0.5 \\
+$\text{Number of hospitals in Edinburgh}^{\cite{ref17}}$ = 16\\
+$\to p_5=\frac{66,335\cdot 0.5}{16}\approx 2073$ \\ \\
+$\text{Fraction of people having a library membership}^{\cite{ref10}} =\frac{1}{4}$ \\
+Number of people going to the libraries $=530,335/4 \approx 132,670$ \\
+$\text{Number of libraries in Edinburgh}^{\cite{ref17}}$ = 49 \\
+$\to p_6=\frac{132,670}{49}\approx2707$ \\ \\
+Average fuel price per liter in $\text{Edinburgh}^{\cite{ref21}}$ = 151.52 pences = 1.5152 pounds \\
+Average fuel consumption in an hour of $\text{idle}^{\cite{ref23}}$ = 2.27 liters \\
+$\text{Average percentage of fuel consumption when driving, compared to idle}^{\cite{ref22}}$ = $175\% $ \\
+Average fuel consumption in an hour of driving = $2.27\cdot1.75=3.9725$ liters, and \\
+Average price for an hour of driving = $1.5152\cdot3.9725 = 6.019132$ pounds \\
+$\to c_{car}=$ average gas price for a minute of driving $=6.019132/60\approx$ 0.1 pounds \\
+\\
+Average driving time for the average person per $\text{week}^{\cite{ref24}}$ = 11.52 hours \\
+Average driving time for the average person per day $= 11.52/7=1.6457$ hours \\
+Average driving cost for the average person per day $= 1.6457\cdot6.019132 = 9.90577$ pounds \\
+Average driving cost for the average person per month $= 9.90577\cdot30= 297.1731456$ pounds \\
+$\text{Number of dwellings in Edinburgh}^{\cite{ref18}} = 253,222$ \\
+$75\% - 40\% = 35\% $ of households have one $\text{car}^{\cite{ref25}}$  $\Rightarrow$ 88,628 households have one car \\
+$40\% $ of households have more than one $\text{car}^{\cite{ref25}}$  $\Rightarrow$ 101,289 households with more than one car \\
+Operating cars in Edinburgh $=88,628 + 2\cdot101,289 = 291,206$ \\
+$\to c_{total}=$ Total cost for car fuel for all residents in a month = $291,206 \cdot297.1731456 \approx 86,538,603$ pounds
+\\  \\Total population of Edinburgh = 530,680 \\
+Cost for such a plan for a city of 300k people = 1,500,000-3,000,000 $\text{pounds}^{\cite{ref27}}$ $\Rightarrow$ \\
+$\approx$ 2,250,000 pounds \\
+Cost for such a plan for a city of 750k people =  3,000,000-7,500,000 $\text{pounds}^{\cite{ref27}}$ $\Rightarrow$ \\
+$\approx$ 5,250,000 pounds \\
+$\to c_{max} = (2,250,000+5,250,000)/2=3,750,000 $
+\subsection*{6.1. APPENDIX B}
+\end{document}
