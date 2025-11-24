@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from building_counts import a 
 # xp.init('C:/xpressmp//bin/xpauth.xpr')
-xp.init('/Applications/FICO Xpress/Xpress Workbench.app/Contents/Resources/xpressmp/bin/xpauth.xpr')
 
 #%%
 def period_prob(previous_results, period, m = np.load('m_matrix.npy')):
