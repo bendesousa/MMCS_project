@@ -264,9 +264,12 @@ def update_m(previous_results, m=None):
 
 		# Rule 1: both open
 		num = y_cumsum[:, t-1][:,None] + y_cumsum[:, t-1][None,:]
-		# den = y_cumsum[:, t-2][:,None] + y_cumsum[:, t-2][None,:] can be zero
-		den = 10 # if min bikes, mu = M_prev, mu = sum_bikes * M_prev/10 (hopefully just to get something working)
-		mu = (num / den) * M_prev
+		den = y_cumsum[:, t-2][:,None] + y_cumsum[:, t-2][None,:]
+		safe_den = den.copy()
+		safe_den[safe_den == 0] = 1   # avoid division by zero
+		ratio = num / safe_den
+		ratio[den == 0] = 1           # force no growth when no prior info
+		mu = ratio * M_prev
 		samples = np.random.normal(mu[both_open], 4)
 		samples = np.maximum(samples, 0)        # clamp negatives to 0
 		M_t[both_open] = np.rint(samples).astype(int)
